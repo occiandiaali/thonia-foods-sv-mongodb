@@ -1,6 +1,9 @@
 <script>
     import {link, replace} from 'svelte-spa-router';
     import { userState } from '../state.svelte';
+    import AdminDashboard from '../lib/AdminDashboard.svelte';
+    import KitchenDashboard from '../lib/KitchenDashboard.svelte';
+    import AttendantDashboard from '../lib/AttendantDashboard.svelte';
 
     const handleSignOut = () => {
         localStorage.removeItem("token");
@@ -10,16 +13,36 @@
 </script>
 
 
-<style scoped></style>
+<style scoped>
+    .greeting-div {
+        position: absolute;
+        top: 10%;
+        left: 45%;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+    }
+    .greeting-div img:hover {
+        cursor: pointer;
+    }
+    .greeting-div span {
+        font-size: small;
+    }
+</style>
 
 <section>
-    <h2>Hi, {userState.firstname}</h2>
+    <div class="greeting-div">
+    <span>Hi, {userState.firstname}</span>
+    <img src="/signout-blackbg.svg" alt="Logout" width="24px" height="24px" onkeydown={handleSignOut} onclick={handleSignOut}/>
+    <!-- <button onclick={handleSignOut}>Logout</button> -->
+     </div>
     {#if userState.role === "admin"}
     <p>You're logged in as {userState.role}</p>
+    <AdminDashboard />
     {:else if userState.role === "attendant"}
-    <p>Attendant Table</p>
+    <AttendantDashboard/>
     {:else if userState.role === "kitchen"}
-    <p>Kitchen Table</p>
+
+    <KitchenDashboard/>
     {/if}
-    <button onclick={handleSignOut}>Logout</button>
 </section>

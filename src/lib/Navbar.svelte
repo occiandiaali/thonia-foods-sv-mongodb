@@ -9,7 +9,7 @@
     }
 </script>
 
-<nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light transparent rounded">
+<nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light transparent">
   <div class="container-fluid">
     <img src="/app-logo.svg" alt="Thonia Foods" width="24px" height="24px" />
     <span class="navbar-brand lobster-text">Thonia Foods</span>
@@ -54,5 +54,13 @@
 
     .lobster-text {
         font-family: 'Lobster', cursive;
+        margin-left: 4px;
+    }
+    @media only screen and (max-width: 600px) {
+      .lobster-text {
+        position: absolute;
+        left: 13%;
+        top: 6%;
+      }
     }
 </style>

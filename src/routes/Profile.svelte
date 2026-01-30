@@ -10,16 +10,26 @@
 </script>
 
 
-<style scoped></style>
+<style scoped>
+    .update {
+        margin: 6px;
+    }
+    .update-input {
+        padding: 6px;
+        border: none;
+        border-radius: 4px;
+    }
+</style>
 
 <section>
     <h3>{userState.firstname}'s Profile</h3>
     <p>Email: {userState.email}</p>
     <p>Phone: {userState.phone}</p>
     <button class="btn btn-outline-danger" onclick={handleSignOut}>Logout</button>
-    <aside style="margin: 6px;">
-    <h4>Change password</h4>
-    <input type="password" placeholder="Update password" />
-    <button class="btn btn-outline-success">Update</button>
-    </aside>
+    <hr />
+    <div style="margin: 6px;">
+    <h5>Change password</h5>
+    <input type="password" placeholder="Update password" class="update-input" />
+    <button class="btn btn-outline-success update">Update</button>
+    </div>
 </section>
