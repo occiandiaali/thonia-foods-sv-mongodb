@@ -9,9 +9,8 @@ import axios from 'axios';
   let errorMessage = $state('');
   let isLoggedIn = $state(false)
 
-  async function handleSubmit() {
-
-
+  async function handleSubmit(event) {
+    event.preventDefault();
     errorMessage = '';// Reset error msg
     if (!email || !password) {
         errorMessage = 'Please, enter valid credentials!';
@@ -65,7 +64,7 @@ import axios from 'axios';
 <div class="wrap">
   <img src="/app-logo.svg" alt="Thonia Foods" width="64px" height="64px" />
   <h2>Thonia Foods</h2>
-  <form on:submit|preventDefault={handleSubmit}>
+  <form onsubmit={handleSubmit}>
 <div class="mb-3">
   <!-- <label for="emailInput" class="form-label">Email</label> -->
   <input type="email" class="form-control" bind:value={email} id="emailInput" placeholder="Email">
