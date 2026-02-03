@@ -59,20 +59,25 @@ import axios from 'axios';
 //     loading = false;
 //    }, 4000);
 //   }
+let isEyeOpen = $state(false);
+function toggleEye() {
+  isEyeOpen = !isEyeOpen;
+}
 </script>
 
 <div class="wrap">
   <img src="/app-logo.svg" alt="Thonia Foods" width="64px" height="64px" />
   <h2>Thonia Foods</h2>
-  <form onsubmit={handleSubmit}>
-<div class="mb-3">
+  <form onsubmit={handleSubmit} >
+<div class="mb-3" style="margin-top: 24px;">
   <!-- <label for="emailInput" class="form-label">Email</label> -->
   <input type="email" class="form-control" bind:value={email} id="emailInput" placeholder="Email">
 </div>
 
-<div class="mb-3">
-  <!-- <label for="passwordInput" class="form-label">Password</label> -->
-  <input type="password" class="form-control" bind:value={password} id="passwordInput" placeholder="Password">
+<div class="mb-3" style="display: flex;">
+  <!-- <label for="passwordInput" class="form-label">Password</label> --> 
+  <input type={!isEyeOpen ? 'password' : 'text'} class="form-control" bind:value={password} id="passwordInput" placeholder="Password">
+  <img src={!isEyeOpen ? '/eye-off.svg' : '/eye.svg'} alt="show password" width="20px" height="20px" class="eye-svg" onclick={toggleEye}/>
 </div>
 
 <!-- <div class="form-check form-switch mb-4">
@@ -97,6 +102,14 @@ import axios from 'axios';
     margin-left: -68%;
 } */
 
+.eye-svg {
+  float: right;
+  margin: 12px 0 0 4px;
+}
+.eye-svg:hover {
+  cursor: pointer;
+}
+
 h2 {
   font-family: 'Lobster', cursive;
 }
@@ -106,10 +119,14 @@ h2 {
 }
   .wrap {
     max-width: 380px;
+    height: 300px;
     margin: 60px auto;
     padding: 8px;
     background-color: rgb(126, 97, 97);
     opacity: 0.76;
+  }
+  input {
+    max-width: 340px;
   }
 
 @media only screen and (max-width: 600px) {

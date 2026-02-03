@@ -23,6 +23,9 @@
 
 <section>
     <h3>{userState.firstname}'s Profile</h3>
+    {#if userState.role === "admin"}
+        <p>You're logged in as {userState.role}</p>
+    {/if}
     <p>Email: {userState.email}</p>
     <p>Phone: {userState.phone}</p>
     <button class="btn btn-outline-danger" onclick={handleSignOut}>Logout</button>

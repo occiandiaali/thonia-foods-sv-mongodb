@@ -17,7 +17,7 @@
     .greeting-div {
         position: absolute;
         top: 10%;
-        left: 45%;
+        left: 20%;
         display: flex;
         align-items: center;
         padding: 4px;
@@ -37,7 +37,7 @@
     <!-- <button onclick={handleSignOut}>Logout</button> -->
      </div>
     {#if userState.role === "admin"}
-    <p>You're logged in as {userState.role}</p>
+    
     <AdminDashboard />
     {:else if userState.role === "attendant"}
     <AttendantDashboard/>

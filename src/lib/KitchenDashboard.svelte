@@ -1,5 +1,6 @@
 <script>
     import axios from "axios";
+
     let itemName = $state('');
     let itemWgt = $state(0);
     let isExtra = $state(false);
@@ -8,6 +9,10 @@
     async function submitEntry(event) {
         event.preventDefault();
       //  const timestamp = new Date().toLocaleString()
+      if (itemName === '' || itemWgt === 0) {
+        alert('You must provide item name and weight!');
+        return;
+      }
         loading = true;
         try {
             const token = localStorage.getItem("token");
@@ -38,6 +43,11 @@
 </script>
 
 <style scoped>
+    input {
+        padding: 6px;
+        border: none;
+        border-radius: 24px;
+    }
     section {
         max-width: 60%;
         margin: 10% auto;
@@ -65,7 +75,7 @@
 </style>
 
 <section>
-    <h3>Send information</h3>
+    <h3>Serving information</h3>
     <form onsubmit={submitEntry}>
     <input type="text" placeholder="Item name" bind:value={itemName} />
     <input type="number" placeholder="Item weight (g)" bind:value={itemWgt}/>
