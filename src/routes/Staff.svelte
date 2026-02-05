@@ -121,7 +121,26 @@ async function getUsers() {
   } finally {
     fetchingUsers = false;
   }
-}  
+} 
+
+async function deleteUser(userid) {
+  try {
+    if (window.confirm(`Are you sure you want to delete this user?`)) {
+      const token = localStorage.getItem("token");
+      const res = await axios.delete(`http://localhost:5000/api/auth/${userid}`, 
+        { 
+          headers: { Authorization: `Bearer ${token}`},
+         });
+        if (res) {
+          console.log("Msg: ", res.data.msg)
+          alert(res.data.msg);
+          //window.location.reload()
+        } 
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 onMount(() => {
   getUsers()
@@ -164,7 +183,7 @@ onMount(() => {
                       <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => openModal('Edit', user.role, user.phone, user.email)}>✏️</span>
                     </td>
                     <td>
-                      <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => confirm(`Remove ${user.firstname}?`)}>🗑️</span>
+                      <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => deleteUser(user._id)}>🗑️</span>
                     </td>
                 </tr>
             {/each}
