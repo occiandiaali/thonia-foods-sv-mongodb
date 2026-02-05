@@ -1,5 +1,5 @@
 <script>
-    import {link, replace} from 'svelte-spa-router';
+    import { replace} from 'svelte-spa-router';
     import { userState } from '../state.svelte';
 
     const handleSignOut = () => {

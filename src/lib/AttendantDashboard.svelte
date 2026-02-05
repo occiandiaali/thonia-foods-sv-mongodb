@@ -1,4 +1,5 @@
 <script>
+  //https://thonia-foods-server.onrender.com
   import { onMount } from "svelte";
   import axios from "axios";
 
@@ -57,7 +58,7 @@
     }
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/api/kitchen/serving/attendant-confirm", {name:foodConfirm, weight:wgtConfirm}, { 
+      const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/serving/attendant-confirm", {name:foodConfirm, weight:wgtConfirm}, { 
               headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
@@ -85,7 +86,7 @@
   async function getServing() {
     try {      
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/kitchen/serving/recent", { 
+      const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/serving/recent", { 
                 headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
@@ -164,7 +165,7 @@
     if (itemName.length >= 3) {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/menu", { 
+        const res = await axios.get("https://thonia-foods-server.onrender.com/api/menu", { 
             params: {name: itemName},
             headers: { Authorization: `Bearer ${token}`},
         })
@@ -359,7 +360,7 @@ function drinkIncrement(item) {
         paidBy: paymentMode
       }
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/api/orders/", newOrder, { 
+      const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
               headers: { Authorization: `Bearer ${token}`},
         });
         if (res) {

@@ -2,13 +2,13 @@
   import { onMount } from "svelte";
  import axios from "axios";
 
-  const rows = [
-  { index: 1, firstname: "Sara", lastname: "Mcguire", email: "tsharp@example.net", phone: "09056459160", role: "admin" },
-  { index: 2, firstname: "Alisha", lastname: "Hebert", email: "vincentgarrett@example.net", phone: "04056459160", role: "kitchen" },
-  { index: 3, firstname: "Gwendolyn", lastname: "Sheppard", email: "mercadon@example.com", phone: "90178077288", role: "attendant" },
-  { index: 4, firstname: "Kristine", lastname: "Mccann", email: "lindsay55@example.com", phone: "07056459160", role: "attendant" },
-  { index: 5, firstname: "Bobby", lastname: "Pittman", email: "blevins@example.com", phone: "37398475381", role: "kitchen" }, 
-];
+//   const rows = [
+//   { index: 1, firstname: "Sara", lastname: "Mcguire", email: "tsharp@example.net", phone: "09056459160", role: "admin" },
+//   { index: 2, firstname: "Alisha", lastname: "Hebert", email: "vincentgarrett@example.net", phone: "04056459160", role: "kitchen" },
+//   { index: 3, firstname: "Gwendolyn", lastname: "Sheppard", email: "mercadon@example.com", phone: "90178077288", role: "attendant" },
+//   { index: 4, firstname: "Kristine", lastname: "Mccann", email: "lindsay55@example.com", phone: "07056459160", role: "attendant" },
+//   { index: 5, firstname: "Bobby", lastname: "Pittman", email: "blevins@example.com", phone: "37398475381", role: "kitchen" }, 
+// ];
 let users = $state([]);
 let fetchingUsers = $state(false);
   let loading = $state(false);
@@ -82,7 +82,8 @@ let fetchingUsers = $state(false);
     try {
       password = setDefaultPassword(role)
       const token = localStorage.getItem("token");
-      const res = await axios.post('http://localhost:5000/api/auth/register', {firstname, lastname, email, phone, role, password}, 
+      //const res = await axios.post('http://localhost:5000/api/auth/register', {firstname, lastname, email, phone, role, password}, 
+      const res = await axios.post('https://thonia-foods-server.onrender.com/api/auth/register', {firstname, lastname, email, phone, role, password},
       { 
         headers: { Authorization: `Bearer ${token}`},
        });
@@ -109,7 +110,8 @@ async function getUsers() {
   try {
       fetchingUsers = true;
       const token = localStorage.getItem("token");
-      const res = await axios.get('http://localhost:5000/api/auth/', 
+      //const res = await axios.get('http://localhost:5000/api/auth/', 
+      const res = await axios.get('https://thonia-foods-server.onrender.com/api/auth/', 
       { 
         headers: { Authorization: `Bearer ${token}`},
        });
@@ -127,7 +129,9 @@ async function deleteUser(userid) {
   try {
     if (window.confirm(`Are you sure you want to delete this user?`)) {
       const token = localStorage.getItem("token");
-      const res = await axios.delete(`http://localhost:5000/api/auth/${userid}`, 
+      //const res = await axios.delete(`http://localhost:5000/api/auth/${userid}`,
+      //https://thonia-foods-server.onrender.com 
+      const res = await axios.delete(`https://thonia-foods-server.onrender.com/api/auth/${userid}`, 
         { 
           headers: { Authorization: `Bearer ${token}`},
          });

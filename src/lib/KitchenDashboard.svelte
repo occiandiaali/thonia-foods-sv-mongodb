@@ -1,5 +1,6 @@
 <script>
     import axios from "axios";
+    //https://thonia-foods-server.onrender.com
 
     let itemName = $state('');
     let itemWgt = $state(0);
@@ -17,7 +18,7 @@
         loading = true;
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post('http://localhost:5000/api/kitchen/serving', {name:itemName, weight:itemWgt, extra: isExtra},{ 
+            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/serving', {name:itemName, weight:itemWgt, extra: isExtra},{ 
         headers: { Authorization: `Bearer ${token}`},
        })
             console.log(`Status: ${res.status}`);
@@ -46,7 +47,7 @@ async function getEntries() {
     try {
         fetching = true;
         const token = localStorage.getItem("token");
-        const res = await axios.get('http://localhost:5000/api/kitchen/serving/recent', { 
+        const res = await axios.get('https://thonia-foods-server.onrender.com/api/kitchen/serving/recent', { 
             headers: { Authorization: `Bearer ${token}`},
         })
         if (res) {

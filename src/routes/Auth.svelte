@@ -1,4 +1,5 @@
 <script>
+  //https://thonia-foods-server.onrender.com
 import axios from 'axios';
   import { userState } from "../state.svelte";
   import {push} from 'svelte-spa-router'
@@ -24,7 +25,7 @@ import axios from 'axios';
         //     headers: { 'Content-Type': 'application/json' },
         //     body: JSON.stringify({ email, password })
         // });
-        const res = await axios.post('http://localhost:5000/api/auth/login', {email, password})
+        const res = await axios.post('https://thonia-foods-server.onrender.com/api/auth/login', {email, password})
     
         // if (!response.ok) {
         //     errorMessage = "Login failed. That's all I know."
