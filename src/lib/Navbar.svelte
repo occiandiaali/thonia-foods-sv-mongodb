@@ -29,7 +29,7 @@
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" href="/profile" use:link>Profile</a></li>
             {#if userState.role === "admin"}
-              <li><a class="dropdown-item" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" href="/management" use:link>Management</a></li>
+              <li><a class="dropdown-item" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" href="/management" use:link>Statistics</a></li>
               <li><a class="dropdown-item" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" href="/staff" use:link>Staff</a></li>
               
             {/if}

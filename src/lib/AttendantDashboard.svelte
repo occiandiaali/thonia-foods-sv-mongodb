@@ -3,86 +3,104 @@
   import axios from "axios";
 
   import { userState } from "../state.svelte";
-  import returnCurrentDateTime from "../helpers/returnCurrentDateTime";
+  // import returnCurrentDateTime from "../helpers/returnCurrentDateTime";
+  // import Receipt from "./Receipt.svelte";
 
     let itemName = $state('');
   //  let items = $state([])
       // Runes syntax states
-  let items = $state([
-    { food: 'Beans', qty: 20, unit: 200, count: 0, expected: 4000, total: 0 },
-    { food: 'Ofada rice', qty: 10, unit: 300, count: 0, expected: 3000, total: 0 },
-    { food: 'Spaghetti', qty: 15, unit: 100,  count: 0, expected: 1500, total: 0 },
-    { food: 'Fried rice', qty: 10, unit:250, count: 0, expected: 2500, total: 0 }
-  ]);
+  // let items = $state([
+  //   { food: 'Beans', qty: 20, unit: 200, count: 0, expected: 4000, total: 0 },
+  //   { food: 'Ofada rice', qty: 10, unit: 300, count: 0, expected: 3000, total: 0 },
+  //   { food: 'Spaghetti', qty: 15, unit: 100,  count: 0, expected: 1500, total: 0 },
+  //   { food: 'Fried rice', qty: 10, unit:250, count: 0, expected: 2500, total: 0 }
+  // ]);
   let food = $state([])
+
   let drinks = $state([])
+  //   /** @typedef {Object} Drink ... */
+//   /**
+//  * @typedef {Object} Drink
+//  * @property {string} name
+//  * @property {number} quantity
+//  * @property {string} category
+//  * @property {number} price
+//  * @property {number} count
+//  * @property {number} sales
+//  * @property {boolean} locked
+//  */
+
+// function lockDrink(index) {
+//   drinks[index] = { ...drinks[index], locked: true };
+//   drinks = [...drinks]; // reassign to trigger reactivity
+// }
+
+  // let drinks = [
+  //   { name: "Coke", quantity: 10, category: "Soft Drink", price: 2, count: 0, sales: 0, locked: false },
+  //   { name: "Pepsi", quantity: 5, category: "Soft Drink", price: 2, count: 0, sales: 0, locked: false }
+  // ];
+
+  // function lockDrink(index) {
+  //   drinks[index] = { ...drinks[index], locked: true };
+  //   drinks = [...drinks]; // reassign array to trigger reactivity
+  // }
 
   // For attendant's confirmation of received cooler/container snack/food
   let foodConfirm = $state('');
   let wgtConfirm = $state(0);
   let confirmation = $state(''); // Text that shows beneath the attendant confirm button
-  function confirmKitchenTable(event) {
+  async function confirmKitchenTable(event) {
     event.preventDefault();
     if (foodConfirm === '' || wgtConfirm === 0) {
       alert("Enter values to confirm.");
       return;
     }
-    confirmation = `${foodConfirm} weight: ${wgtConfirm}`;
-    alert(confirmation); 
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post("http://localhost:5000/api/kitchen/serving/attendant-confirm", {name:foodConfirm, weight:wgtConfirm}, { 
+              headers: { Authorization: `Bearer ${token}`},
+            });
+      if (res) {
+        confirmation = res.data;
+      }      
+    } catch (err) {
+      console.error(err)
+    }
+    // confirmation = `${foodConfirm} weight: ${wgtConfirm}`;
+    // alert(confirmation); 
+  }
+  function clearConfirm() {
+    foodConfirm = "";
+    wgtConfirm = 0;
+    confirmation = ""
   }
 
+  let getservingCount = $state(0);
+  function handleGetServing() {
+    // if block is to check fetching stale data
+    if (getservingCount < food.length && food.length > 0) {
+      getServing();
+    }// getservingCount < food
+  }
   async function getServing() {
-    try {
+    try {      
       const token = localStorage.getItem("token");
       const res = await axios.get("http://localhost:5000/api/kitchen/serving", { 
                 headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
-      //  console.log("Res ", res.data)
-
         res.data.forEach(obj => {
           const temp = {...obj, count:0, sales:0}
           food.push(temp);
+          getservingCount = food.length;
           localStorage.setItem("food", JSON.stringify(food));
         });
-      //  console.log("food ", food)
       }
+    
     } catch (err) {
       console.error(err)
     }
   }
-
-  // function addItem() {
-  //   if (itemName.length >= 3) {
-  //   items.push({ food: itemName, qty: 5, unit: 200, count: 0, expected: 1500, total: 0 });
-  //   } else {
-  //       alert("Enter the item name first!")
-  //   }
-  // }
-
-  // function increment(item) {
-  //   if (item.total > 0 && item.total < item.expected) {
-  //   item.qty++;
-  //   item.count--;
-  //   item.total = item.count * item.unit;
-  //   } else {
-  //   item.qty = item.qty
-  // }
-  // } 
-
-  // function decrement(item) {
-  //   if (item.qty > 0) {
-  //     item.qty--;
-  //     item.count++;
-  //     item.total = item.count * item.unit;
-  //   } else {
-  //       item.qty = 0;
-  //   }
-  // }
-
-  //   function removeItem(index) {
-  //   items.splice(index, 1);
-  // }
 
   // function clearAll() { 
   //   items.splice(0, items.length); // remove everything 
@@ -96,24 +114,41 @@
    let startOrder = $state(false);
    let checkingOut = $state(false);
 
-   let orderStorage = $state([])
+   let orderStorage = $state([]);
+
+     /** New Order vars */
+  /**
+ * @typedef {Object} foodObj
+ * @property {string} name - The name of the object.
+ * @property {number} quantity - The quantity associated with the object.
+ * @property {number} subTotal - The subTotal associated with the object.
+ */
+  const foodObj = $state({name:'', quantity:0,subTotal:0});
+  let foodCount = $state(0);
+
+/**
+ * @typedef {Object} drinkObj
+ * @property {string} name - The name of the object.
+ * @property {number} quantity - The quantity associated with the object.
+ * @property {number} subTotal - The subTotal associated with the object.
+ */
+  const drinkObj = $state({name:'', quantity:0,subTotal:0});
+  let drinkCount = $state(0);
+
+  let foodTotal = $state(0);
+  let drinkTotal = $state(0);
 
    function newOrder() {
     startOrder = true;
-    const storedOrder = localStorage.getItem("storedOrder");
-    if (storedOrder) {
-      localStorage.removeItem("storedOrder");
-      orderStorage = [];
-    } else {
-      localStorage.setItem("storedOrder", JSON.stringify(orderStorage))
-    }
+    // const storedOrder = localStorage.getItem("storedOrder");
+    // if (storedOrder) {
+    //   localStorage.removeItem("storedOrder");
+    //   orderStorage = [];
+    // } else {
+    //   localStorage.setItem("storedOrder", JSON.stringify(orderStorage))
+    // }
    }
 
-  //  function newOrder() {
-  //   orderId = Math.random().toString();
-  //   const order = [{...orderItems, id: orderId}]
-  //   alert(`Order: ${order}`);
-  //  }
   //========================
   function updateFoodLocalStorage() {
     localStorage.setItem("food", JSON.stringify(food))
@@ -123,7 +158,7 @@
   }
    
    let addDrinkErrorMsg = $state('');
-    async function addDrink(event) {
+  async function addDrink(event) {
       event.preventDefault();
       addDrinkErrorMsg = '';// Reset error msg
     if (itemName.length >= 3) {
@@ -134,7 +169,7 @@
             headers: { Authorization: `Bearer ${token}`},
         })
         if (res) {
-          console.log("drink ",res.data);
+        //  console.log("drink ",res.data);
           const temp = {...res.data, count:0, sales:0}
           drinks.push(temp);
           localStorage.setItem("drinks", JSON.stringify(drinks));
@@ -159,27 +194,6 @@
         alert("Enter the item name first!")
     }
   }
-  /** New Order vars */
-  /**
- * @typedef {Object} foodObj
- * @property {string} name - The name of the object.
- * @property {number} quantity - The quantity associated with the object.
- * @property {number} subTotal - The subTotal associated with the object.
- */
-  const foodObj = $state({name:'', quantity:0,subTotal:0});
-  let foodCount = $state(0);
-
-    /**
- * @typedef {Object} drinkObj
- * @property {string} name - The name of the object.
- * @property {number} quantity - The quantity associated with the object.
- * @property {number} subTotal - The subTotal associated with the object.
- */
-  const drinkObj = $state({name:'', quantity:0,subTotal:0});
-  let drinkCount = $state(0);
-
-  let foodTotal = $state(0);
-  let drinkTotal = $state(0);
 
   function increment(item) {
     if (item.sales > 0 && item.sales < item.expectedTotal) {
@@ -256,6 +270,7 @@ function drinkIncrement(item) {
         drinkObj['name'] = item.name;
         drinkObj['quantity'] = drinkCount;
         drinkObj['subTotal'] = item.price * drinkCount;
+        
       } else {
       item.quantity = item.quantity
       
@@ -292,8 +307,17 @@ function drinkIncrement(item) {
 
   let orderTotal = $derived(foodObj.subTotal + drinkObj.subTotal);
   let paymentMode = $state('');
+  let orderid = $state('');
+  let waiter = $state('');
+  let time = $state('');
+  let total = $state(0);
+  let mode = $state('');
+  let cart = $state({});
+  let checkoutDone = $state(false);
+  let foodOrder = $state(null);
+  let drinkOrder = $state(null);
 
-  function checkOut() {
+  async function checkOut() {
     try {
       checkingOut = true;
       if (Object.keys(foodObj).length > 0) {
@@ -302,6 +326,7 @@ function drinkIncrement(item) {
             foodTotal += +v;
           }
         })
+        foodOrder = {name:foodObj.name, quantity: foodObj.quantity, subTotal: foodObj.subTotal}
       } else {
         foodTotal = 0;
       }
@@ -312,29 +337,58 @@ function drinkIncrement(item) {
             drinkTotal += +v;
           }
         })
+        drinkOrder = {name:drinkObj.name, quantity: drinkObj.quantity, subTotal: drinkObj.subTotal};
       } else {
         drinkTotal = 0;
       }
+
+      // console.log("FoodObj..");
+      // console.debug(foodObj)
+      //       console.log("DrinkObj..");
+      // console.debug(drinkObj)
       
-      const attendant = `${userState.firstname} ${userState.lastname}`;
-      const orderId = Math.random().toString(36).slice(2);
-      const order = [{id: orderId, food:foodObj||{}, drinks:drinkObj||{}}]
-      const t = drinkTotal + foodTotal;
-      const paidBy = paymentMode;
-      const timestamp = returnCurrentDateTime();
+    //  const foodOrder = Object.keys(foodObj).length > 0 ? {name:foodObj.name, quantity: foodObj.quantity, subTotal: foodObj.subTotal} : null;
+    //  const drinkOrder = Object.keys(drinkObj).length > 0 ? {name:drinkObj.name, quantity: drinkObj.quantity, subTotal: drinkObj.subTotal} : null;
+      
+      const newOrder = {
+        orderId: Math.random().toString(36).slice(2),
+       
+        attendant: `${userState.firstname} ${userState.lastname}`,
+        items: [foodOrder, drinkOrder],
+        total: drinkTotal + foodTotal,
+        paidBy: paymentMode
+      }
+      const token = localStorage.getItem("token");
+      const res = await axios.post("http://localhost:5000/api/orders/", newOrder, { 
+              headers: { Authorization: `Bearer ${token}`},
+        });
+        if (res) {
+          alert(`Completed order`);
+        //  console.log(res.data);
+        }
+      // drinkObj['locked'] = true;
       //order.id, order.food.{name,quantity,subTotal}, order.drinks.{name,quantity,subTotal}
       //Order: ${JSON.stringify(order, null, 2)}
-      alert(`
+      // alert(`
 
-       Attendant: ${attendant}
-       =======================
-       Time: ${timestamp}
-        Order:
-         ${JSON.stringify(order, null, 2)}
-        ===================
-        Total: ₦${t}
-        paid via: ${paidBy}
-        `); 
+      //  Attendant: ${attendant}
+      //  =======================
+      //  Time: ${timestamp}
+      //   Order:
+      //    ${JSON.stringify(order, null, 2)}
+      //   ===================
+      //   Total: ₦${t}
+      //   paid via: ${paidBy}
+      //   `); 
+
+    orderid = newOrder.orderId;
+    mode = newOrder.paidBy;
+    waiter = newOrder.attendant;
+ 
+    total = newOrder.total;
+    cart = newOrder.items; 
+    checkoutDone = true;   
+       
     startOrder = false;
     foodObj["name"] = "";
     foodObj["quantity"] = 0;
@@ -528,10 +582,15 @@ function drinkIncrement(item) {
     border: none;
     border-radius: 24px;
   }
+  .clear-confirm-btn {
+    background-color: red;
+    color: white;
+  }
   /** The Orders list drinks section styles*/
   .drinkOrdersDiv {
     display: flex;
     flex-direction: row;
+    justify-items: center;
   }
   .drinkOrdersNameDiv {
     flex: 1;
@@ -571,10 +630,10 @@ function drinkIncrement(item) {
     {/each}
    </div> -->
    <div class="kitchen-stats-div">
-   <p style="margin-left: 24px;">Kitchen <img src="/refresh-arrows-nobg.svg" alt="refresh" width="20px" height="20px" class="refresher"/></p>
+   <p style="margin-left: 24px;">Kitchen <img src="/refresh-arrows-nobg.svg" alt="refresh" width="20px" height="20px" class="refresher" onclick={handleGetServing}/></p>
    <ul>
    {#each food as row}
-    <li>{row.name}: {row.kitchenWgt/1000}Kg</li>
+    <li>{row.name}: {row.wgt/1000}Kg/{row.qty} portions</li>
    {/each}
    </ul>
    </div>
@@ -587,7 +646,8 @@ function drinkIncrement(item) {
   <button type="submit">Confirm</button>
   </form>
   {#if confirmation}
-    <p>{confirmation}</p>
+  <button class="clear-confirm-btn" onclick={clearConfirm}>Clear</button>
+    <p>Weight: {+confirmation/1000}Kg</p>
   {/if}
 </section>
 <hr/>
@@ -610,19 +670,19 @@ function drinkIncrement(item) {
 <div class="items-list-div">
   <h5>Snacks/Food</h5>
   {#each food as item, i}     
-        <div style="display: flex;flex-wrap:wrap; padding:10px;justify-content:space-between; align-items:center">
+        <div style="display: flex;flex-wrap:wrap; padding:10px;justify-content:space-around; align-items:center">
           <!-- Food input -->
           <!-- <input type="text" bind:value={item.food} placeholder="Item name" /> -->
-          <span class="item-food-span">{item.name}</span>
+          <span class="item-food-span">{item.name}{item.addition ? '★' : null}</span>
            <!-- Qty control -->
       <button id="decQty" onclick={() => decrement(item)} disabled={startOrder === false}>-</button>
       <span>{item.qty}</span>
-      <button id="incQty" onclick={() => increment(item)} disabled={startOrder === false}>+</button>
+      <!-- <button id="incQty" onclick={() => increment(item)} disabled={startOrder === false}>+</button> -->
       <!-- Count -->
-      <span>qty: {item.count}</span>
+      <span>quantity: {item.count}</span>
       <span>|</span>
       <!-- Expected -->
-      <span> ₦{item.expectedTotal}</span>
+      <span> <strong>₦{item.expectedTotal}</strong></span>
       <span>|</span>
       <!-- Total -->
       <span>Total: ₦{item.sales}</span>
@@ -646,7 +706,7 @@ function drinkIncrement(item) {
       <!-- Qty control -->
         <button id="decQty" onclick={() => drinkDecrement(drink)} disabled={startOrder === false}>-</button>
         <span>{drink.quantity}</span>
-        <button id="incQty" onclick={() => drinkIncrement(drink)} disabled={startOrder === false}>+</button>
+        <!-- <button id="incQty" onclick={() => drinkIncrement(drink)} disabled={startOrder === false}>+</button> -->
     </div>
     <div class="drinkOrdersStatDiv">
           <!-- Count -->
@@ -678,6 +738,9 @@ function drinkIncrement(item) {
     Order Total: ₦{orderTotal}
     <button class={!startOrder ? 'new-order-btn' : 'checkout-btn'} onclick={() => !startOrder ? newOrder() : checkOut()}>{startOrder ? 'Complete' : checkingOut ? 'Processing' : 'New Order'}</button>
   </div>
+  <!-- {#if checkoutDone}
+  <Receipt orderid={orderid} mode={mode} total={total} cart={cart} waiter={waiter} />
+    
+  {/if} -->
 </div>
-
 </section>

@@ -1,15 +1,19 @@
 <script>
+  import { onMount } from "svelte";
  import axios from "axios";
-    const rows = [
+
+  const rows = [
   { index: 1, firstname: "Sara", lastname: "Mcguire", email: "tsharp@example.net", phone: "09056459160", role: "admin" },
   { index: 2, firstname: "Alisha", lastname: "Hebert", email: "vincentgarrett@example.net", phone: "04056459160", role: "kitchen" },
   { index: 3, firstname: "Gwendolyn", lastname: "Sheppard", email: "mercadon@example.com", phone: "90178077288", role: "attendant" },
   { index: 4, firstname: "Kristine", lastname: "Mccann", email: "lindsay55@example.com", phone: "07056459160", role: "attendant" },
   { index: 5, firstname: "Bobby", lastname: "Pittman", email: "blevins@example.com", phone: "37398475381", role: "kitchen" }, 
 ];
-
+let users = $state([]);
+let fetchingUsers = $state(false);
   let loading = $state(false);
   let errorMessage = $state('');
+  let getUsersErrorMessage = $state('');
 
   let isModalOpen = $state(false);
   let firstname = $state('');
@@ -78,14 +82,12 @@
     try {
       password = setDefaultPassword(role)
       const token = localStorage.getItem("token");
-      console.log("Token:", token);
-
       const res = await axios.post('http://localhost:5000/api/auth/register', {firstname, lastname, email, phone, role, password}, 
       { 
         headers: { Authorization: `Bearer ${token}`},
        });
       if (res) {
-        console.log("Res ", res);
+        //console.log("Res ", res);
         closeModal();
         alert(`Successfully registered: ${res.data.firstname} in the role of ${res.data.role}!`)
       }
@@ -102,6 +104,29 @@
     isModalOpen = false;
   }
 
+async function getUsers() {
+  getUsersErrorMessage = '';// Reset error msg
+  try {
+      fetchingUsers = true;
+      const token = localStorage.getItem("token");
+      const res = await axios.get('http://localhost:5000/api/auth/', 
+      { 
+        headers: { Authorization: `Bearer ${token}`},
+       });
+      if (res) {
+        users = res.data
+      } 
+  } catch (error) {
+    getUsersErrorMessage = error;
+  } finally {
+    fetchingUsers = false;
+  }
+}  
+
+onMount(() => {
+  getUsers()
+})
+
 </script>
 
 <h2>Staff</h2>
@@ -109,9 +134,10 @@
        <button type="button" class="btn btn-warning fw-bold" on:click={() => openModal("New")}>&plus;</button>
      <table class="table caption-top">
         <caption style="color: purple;">List of users</caption>
+
         <thead>
             <tr>
-            <th scope="col">#</th>
+            <!-- <th scope="col">#</th> -->
             <th scope="col">First</th>
             <th scope="col">Last</th>
             <th scope="col">Email</th>
@@ -123,27 +149,30 @@
             </tr>
         </thead>
         <tbody>
-            {#each rows as row}
+          {#each users as user}
                 <tr>
-                <th scope="row">{row.index}</th>
-                    <td>{row.firstname}</td>
-                    <td>{row.lastname}</td>
-                    <td>{row.email}</td>
-                    <td>{row.phone}</td>
-                    <td>{row.role}</td>
+                <!-- <th scope="row">{user._id}</th> -->
+                    <td>{user.firstname}</td>
+                    <td>{user.lastname}</td>
+                    <td>{user.email}</td>
+                    <td>{user.phone}</td>
+                    <td>{user.role}</td>
                     <!-- <td>
                         <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" data-toggle="modal" data-target="#exampleModal">✏️</span> <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => confirm(`Remove ${row.firstname}?`)}>🗑️</span>
                     </td> -->
                     <td>
-                      <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => openModal('Edit', row.role, row.phone, row.email)}>✏️</span>
+                      <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => openModal('Edit', user.role, user.phone, user.email)}>✏️</span>
                     </td>
                     <td>
-                      <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => confirm(`Remove ${row.firstname}?`)}>🗑️</span>
+                      <span class="badge" role="button" tabindex="-1" style="cursor: pointer;" on:click={() => confirm(`Remove ${user.firstname}?`)}>🗑️</span>
                     </td>
                 </tr>
             {/each}
         </tbody>
      </table>
+      {#if fetchingUsers}
+        <p>Loading...</p>
+      {/if}
     </div>
     <!-- Modal -->
      {#if isModalOpen}
