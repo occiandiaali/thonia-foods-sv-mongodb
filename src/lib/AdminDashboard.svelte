@@ -83,7 +83,7 @@
             })
 
             if (res) {
-                alert(`Added: ${JSON.stringify(res.data)}`);
+                alert(`Added: ${menuItemName} to ${menuItemCategory} category.`);
                 menuItemName = "";
                 menuItemPrice = 0;
                 menuItemCategory = '';
@@ -112,7 +112,7 @@
 
             if (res) {
                 alert(`Created: ${coolerName} container.`);
-                console.log(res.data);
+              //  console.log(res.data);
                 coolerName = "";
                 coolerWeight = 0;
                 scoopWeight = 0;
