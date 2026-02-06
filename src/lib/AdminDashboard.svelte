@@ -70,6 +70,17 @@
         showKitchen = false
     }
 
+    let showKitchenModal = $state(false)
+    function openKitchenModal() {
+    showKitchenModal = true;
+    
+  }
+
+  function closeKitchenModal() {
+    showKitchenModal = false;
+    
+  }
+
     async function addMenuItem(event) {
         event.preventDefault();
         if (menuItemName === '' || menuItemPrice === 0 || menuItemCategory === '') {
@@ -130,8 +141,9 @@
 
 <div class="wrap-div">
     <section class="top-section">
-    <h3>Last 3hrs (Orders)</h3>
-    <button class="recents-btn" onclick={handleShowOrders}>{fetchingOrders ? 'Fetching..' : 'Show orders'}</button>
+    <h3>Today's sales</h3>
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#dailyOrdersModal">Show sales</button>
+    <!-- <button class="recents-btn" onclick={handleShowOrders}>{fetchingOrders ? 'Fetching..' : 'Show orders'}</button>
     {#if showOrders}
     <button onclick={handleHideOrders}>Hide orders</button>
     {/if}
@@ -159,12 +171,56 @@
         </tbody>
     </table>
 
-    {/if}
+    {/if} -->
 </section>
+<!--Orders Modal -->
+<div class="modal fade" id="dailyOrdersModal" tabindex="-1" aria-labelledby="dailyOrdersModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title heading" id="dailyOrdersModalLabel">Sales for {new Date().toISOString().substring(0, 10)}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {#if recentOrders.length > 0}
+        <table class="responsive-table">
+        <thead>
+            <tr>
+            <th>Order ID</th>
+            <th>When</th>
+            <th>Attendant</th>
+            <th>Total</th>
+            <th>Payment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each recentOrders as order}
+                <tr>
+                    <td data-label="Order ID">{order.orderId}</td>
+                    <td data-label="When">{new Intl.DateTimeFormat("en-GB", {dateStyle:"short",timeStyle: "medium"}).format(new Date(order.createdAt))}</td>
+                    <td data-label="Attendant">{order.attendant}</td>
+                    <td data-label="Total">₦{order.total}</td>
+                    <td data-label="Payment">{order.paidBy}</td>
+                </tr>
+            {/each}
+        </tbody>
+    </table>
+    {:else}
+    <p>No sales yet!</p>
+    {/if}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 <hr/>
 <section class="top-section">
     <h3>Last 24hrs (Kitchen)</h3>
-    <button class="recents-btn" onclick={handleShowKitchen}>{fetching ? 'Fetching..' : 'Show kitchen'}</button>
+    <button style="background:teal;color:white;" onclick={openKitchenModal}>Show kitchen</button>
+    <!-- <button class="recents-btn" onclick={handleShowKitchen}>{fetching ? 'Fetching..' : 'Show kitchen'}</button>
     {#if showKitchen}
     <button onclick={handleHideKitchen}>Hide kitchen</button>
     {/if}
@@ -190,12 +246,59 @@
         </tbody>
     </table>
 
+    {/if} -->
+</section>
+<!--Kitchen Modal -->
+{#if showKitchenModal}
+  <div class="modal fade show" tabindex="-1" style="display: block;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title heading">Kitchen Table for {new Date().toISOString().substring(0, 10)}</h5>
+          <button type="button" aria-label="show kitchen button" class="btn-close" onclick={closeKitchenModal}></button>
+        </div>
+        <div class="modal-body">
+    {#if recents.length > 0}        
+    <table class="responsive-table">
+        <thead>
+            <tr>
+            <th>Name</th>
+            <th>Weight</th>
+            <th>Portions</th>
+            <th>Addition</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each recents as item}
+                <tr>
+                    <td data-label="Name">{item.name}</td>
+                    <td data-label="Weight">{item.wgt}</td>
+                    <td data-label="Portions">{item.qty}</td>
+                    <td data-label="Addition">{item.addition}</td>
+                </tr>
+            {/each}
+        </tbody>
+    </table>
+    {:else}
+    <p>Kitchen has sent no data!</p>
     {/if}
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-success">Save</button>
+      </div>
+      </div>
+    </div>
+  </div>
+{/if}
+<hr/>
+<section class="top-section">
+    <h3>Stock</h3>
+    <button type="button" class="btn btn-secondary">Show stock</button>
 </section>
 <hr/>
 <section class="set-stock-section">
     <!-- <h3>Create Container</h3> -->
-     <label for="container-action">Food/Snack container</label>
+     <label for="container-action" style="font-weight: 700;">Food container</label><br/>
     <select id="container-action" bind:value={containerAction}>
         <option value="">--Select action--</option>
         <option value="create">Create Container</option>
@@ -225,7 +328,7 @@
         <label for="menuItemPrice">Price (portion or piece)</label>
     <input type="number" placeholder="In Naira e.g. 2550" bind:value={menuItemPrice} id="menuItemPrice" />
     <br/>
-    <label for="menuItemQty">Stock quantity (Drinks)</label>
+    <label for="menuItemQty">Stock quantity (Drinks/Snacks)</label>
     <input type="number" placeholder="For drinks" bind:value={menuItemQty} id="menuItemQty" />
         <label for="itemCategory">Category</label>
     <select name="itemCategory" id="itemCategory" bind:value={menuItemCategory}>
@@ -264,6 +367,9 @@
     }
     label {
         font-size: medium;
+    }
+    .heading {
+        font-size: small;
     }
     .recents-btn {
         color: white;

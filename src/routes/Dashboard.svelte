@@ -32,7 +32,7 @@
 
 <section>
     <div class="greeting-div">
-    <span>Hi, {userState.firstname}</span>
+    <span style="color: white;">Hi, {userState.firstname}</span>
     <!-- <img src="/signout-blackbg.svg" alt="Logout" width="24px" height="24px" onkeydown={handleSignOut} onclick={handleSignOut}/> -->
     <!-- <button onclick={handleSignOut}>Logout</button> -->
      </div>
