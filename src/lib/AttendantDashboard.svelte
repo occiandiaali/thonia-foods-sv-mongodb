@@ -49,6 +49,7 @@
   // For attendant's confirmation of received cooler/container snack/food
   let foodConfirm = $state('');
   let wgtConfirm = $state(0);
+  let confirming = $state(false);
   let confirmation = $state(''); // Text that shows beneath the attendant confirm button
   async function confirmKitchenTable(event) {
     event.preventDefault();
@@ -57,8 +58,9 @@
       return;
     }
     try {
+      confirming = true;
       const token = localStorage.getItem("token");
-      const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/serving/attendant-confirm", {name:foodConfirm, weight:wgtConfirm}, { 
+      const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/serving/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
               headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
@@ -66,6 +68,8 @@
       }      
     } catch (err) {
       console.error(err)
+    } finally {
+      confirming = false;
     }
     // confirmation = `${foodConfirm} weight: ${wgtConfirm}`;
     // alert(confirmation); 
@@ -166,7 +170,7 @@
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get("https://thonia-foods-server.onrender.com/api/menu", { 
-            params: {name: itemName},
+            params: {name: itemName.trim().toLowerCase()},
             headers: { Authorization: `Bearer ${token}`},
         })
         if (res) {
@@ -522,9 +526,8 @@ function drinkIncrement(item) {
     justify-content: center;
     align-items: center;
   }
-    #incQty {
-    /* width: 40px;
-    height: 40px; */
+    /* #incQty {
+
     width: 30px;
     height: 30px;
     flex: 0 0 auto;
@@ -536,7 +539,7 @@ function drinkIncrement(item) {
     justify-content: center;
     align-items: center;
     
-  }
+  } */
   .items-list-div {
     margin-top: 3%;
   }
@@ -570,9 +573,9 @@ function drinkIncrement(item) {
     right: 0;
     margin-top: 6px;
   } */
-  .refresher:hover {
+  /* .refresher:hover {
     cursor: pointer;
-  }
+  } */
   .weight-confirm-section button {
     background: yellowgreen;
     padding: 6px;
@@ -583,10 +586,7 @@ function drinkIncrement(item) {
     border: none;
     border-radius: 24px;
   }
-  .clear-confirm-btn {
-    background-color: red;
-    color: white;
-  }
+
   /** The Orders list drinks section styles*/
   .drinkOrdersDiv {
     display: flex;
@@ -631,7 +631,8 @@ function drinkIncrement(item) {
     {/each}
    </div> -->
    <div class="kitchen-stats-div">
-   <p style="margin-left: 24px;">Kitchen <img src="/refresh-arrows-nobg.svg" alt="refresh" width="20px" height="20px" class="refresher" onclick={handleGetServing}/></p>
+   <!-- <p style="margin-left: 24px;">Kitchen <img src="/refresh-arrows-nobg.svg" alt="refresh" width="20px" height="20px" class="refresher" onclick={handleGetServing}/></p> -->
+    <p style="margin-left: 24px;">Kitchen Table</p>
    <ul>
    {#each food as row}
     <li>{row.name}: {row.wgt/1000}Kg/{row.qty} portions</li>
@@ -640,14 +641,14 @@ function drinkIncrement(item) {
    </div>
 <hr/>
 <section class="weight-confirm-section">
-  <h5>Confirm item</h5>
+  <h5>Confirm weight</h5>
   <form onsubmit={confirmKitchenTable}>
   <input placeholder="food/snack" bind:value={foodConfirm}/>
   <input type="number" placeholder="Weight" bind:value={wgtConfirm}/>
-  <button type="submit">Confirm</button>
+  <button type="submit">{confirming ? 'Wait..' : 'Confirm'}</button>
   </form>
   {#if confirmation}
-  <button class="clear-confirm-btn" onclick={clearConfirm}>Clear</button>
+  <button style="background-color: darkgoldenrod;" onclick={clearConfirm}>Clear</button>
     <p>Weight: {+confirmation/1000}Kg</p>
   {/if}
 </section>
@@ -660,7 +661,7 @@ function drinkIncrement(item) {
 <div class="controls">
   <form onsubmit={addDrink}>
   <input type="text" style="padding: 6px;border:none;border-radius:24px;" bind:value={itemName} placeholder="Add drink" />
-  <button type="submit" class="item-add">✖</button>
+  <button type="submit" class="item-add">+</button>
   </form>
   {#if addDrinkErrorMsg}
     <p style="color: red;">{addDrinkErrorMsg}</p>

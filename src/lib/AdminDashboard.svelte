@@ -79,7 +79,7 @@
         loadingAdd = true;
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post('https://thonia-foods-server.onrender.com/api/menu', {name:menuItemName.toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
+            const res = await axios.post('https://thonia-foods-server.onrender.com/api/menu', {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
                 headers: { Authorization: `Bearer ${token}`},
             })
 
@@ -107,7 +107,7 @@
         loadingCreate = true;
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/add-container', {name:coolerName.toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
+            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/add-container', {name:coolerName.trim().toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
                 headers: { Authorization: `Bearer ${token}`},
             })
 

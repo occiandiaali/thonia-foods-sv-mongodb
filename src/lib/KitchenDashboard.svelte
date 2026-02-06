@@ -7,6 +7,7 @@
     let isExtra = $state(false);
     let loading = $state(false);
     let recents = $state([])
+    let showRecents = $state(false);
 
     async function submitEntry(event) {
         event.preventDefault();
@@ -18,16 +19,16 @@
         loading = true;
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/serving', {name:itemName, weight:itemWgt, extra: isExtra},{ 
+            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/serving', {name:itemName.trim().toLowerCase(), weight:itemWgt, extra: isExtra},{ 
         headers: { Authorization: `Bearer ${token}`},
        })
-            console.log(`Status: ${res.status}`);
+           // console.log(`Status: ${res.status}`);
             if (res.status !== 200) {
                 alert("Couldn't complete this action. That's all I know!");
                 return;
             }
             if (res) {
-                alert(`Submission: ${JSON.stringify(res.data)}`);
+                alert(`Successfully submitted.`);
                 itemName = "";
                 itemWgt = 0;
                 isExtra = false;
@@ -45,6 +46,7 @@
     let fetching = $state(false);
 async function getEntries() {
     try {
+        showRecents = true;
         fetching = true;
         const token = localStorage.getItem("token");
         const res = await axios.get('https://thonia-foods-server.onrender.com/api/kitchen/serving/recent', { 
@@ -82,6 +84,10 @@ async function getEntries() {
             display: inline-flex;
         justify-content: center;
         align-items: center;
+    }
+    .hide-recents-btn {
+        margin: 6px;
+        background: slateblue;
     }
     .recents-btn {
         margin: 6px;
@@ -145,7 +151,10 @@ async function getEntries() {
     <button type="submit">{loading ? 'Submitting' : 'Submit'}</button>
     </form>
     <button class="recents-btn" onclick={getEntries}>{fetching ? 'Fetching..' : 'Show recent'}</button>
-    {#if recents.length > 0}
+    {#if showRecents}
+        <button class="hide-recents-btn" onclick={() => showRecents = false}>Hide recent</button>
+    {/if}
+    {#if recents.length > 0 && showRecents === true}
     <table class="responsive-table">
         <thead>
             <tr>
