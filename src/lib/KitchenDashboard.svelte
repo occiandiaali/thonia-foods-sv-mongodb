@@ -64,13 +64,44 @@ async function getEntries() {
 </script>
 
 <style scoped>
+    /* .gui-switch {
+    display: flex;
+    align-items: center;
+    margin-left: 12%;
+    }
+    input[type="checkbox"] {
+    appearance: none;
+    width: 50px;
+    height: 25px;
+    background-color: #ccc;
+    border-radius: 15px;
+    position: relative;
+    cursor: pointer;
+    }
+
+input[type="checkbox"]:checked {
+  background-color: #4caf50;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 28px;
+  width: 20px;
+  height: 20px;
+  background-color: rgb(43, 33, 33);
+  border-radius: 50%;
+  transition: 0.2s;
+} */
     input {
         padding: 6px;
         border: none;
         border-radius: 24px;
     }
     section {
-        max-width: 60%;
+        width: 100%;
+        
         margin: 10% auto;
     }
     section input {
@@ -107,6 +138,27 @@ async function getEntries() {
   .responsive-table th {
     background-color: #f2f2f2;
   }
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 1rem; /* Space between columns */
+}
+
+.column {
+    padding: 1rem;
+    background-color: lightblue; /* Background color for visibility */
+}
+
+@media (max-width: 600px) {
+    .container {
+        grid-template-columns: 1fr; /* Stack columns on small screens */
+        justify-content: space-around;
+    }
+    input {
+        margin: 6px;
+    }
+}
+
 
   @media (max-width: 600px) {
     .responsive-table thead {
@@ -142,15 +194,18 @@ async function getEntries() {
     }
 </style>
 
-<section>
-    <h3 style="margin: 0 auto;">Kitchen Table</h3>
+<h3 style="margin: 0 auto;">Kitchen Table</h3>
+<div class="container">
+<div class="submit-food-section column">
+    <h5>Food Entry</h5>
     <form onsubmit={submitEntry}>
-    <input type="text" placeholder="Food/Snack name" bind:value={itemName} />
+    <input type="text" placeholder="Food name" bind:value={itemName} />
     <input type="number" placeholder="Item weight (g)" bind:value={itemWgt}/>
-    <input type="checkbox" bind:checked={isExtra}/> Extra
+    <input type="checkbox" role="switch" bind:checked={isExtra}/> Extra <br/>
+   
     <button type="submit">{loading ? 'Submitting' : 'Submit'}</button>
     </form>
-    <button class="recents-btn" onclick={getEntries}>{fetching ? 'Fetching..' : 'Show recent'}</button>
+    <!-- <button class="recents-btn" onclick={getEntries}>{fetching ? 'Fetching..' : 'Show recent'}</button>
     {#if showRecents}
         <button class="hide-recents-btn" onclick={() => showRecents = false}>Hide recent</button>
     {/if}
@@ -175,5 +230,18 @@ async function getEntries() {
             {/each}
         </tbody>
     </table>
-    {/if}
-</section>
+    {/if} -->
+</div>
+
+<div class="submit-snacks-section column">
+    <h5>Snacks Entry</h5>
+    <form onsubmit={submitEntry}>
+    <input type="text" placeholder="Snack name" bind:value={itemName} />
+    <input type="number" placeholder="Item weight (g)" bind:value={itemWgt}/>
+    <input type="checkbox" role="switch" bind:checked={isExtra}/> Extra <br/>
+   
+    <button type="submit">{loading ? 'Submitting' : 'Submit'}</button>
+    </form>
+
+</div>
+</div>
