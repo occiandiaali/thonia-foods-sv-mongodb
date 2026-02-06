@@ -230,7 +230,8 @@
         <label for="itemCategory">Category</label>
     <select name="itemCategory" id="itemCategory" bind:value={menuItemCategory}>
   <option value="">--Choose item category--</option>
-  <option value="food">Snack/Food</option>
+  <option value="snack">Snack</option>
+  <option value="food">Food</option>
   <option value="drinks">Drinks</option>
 </select>
     <button type="submit" class="add-container-btn">{loadingAdd ? 'Adding' : 'Add'}</button>

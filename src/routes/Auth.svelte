@@ -68,7 +68,7 @@ function toggleEye() {
 
 <div class="wrap">
   <img src="/app-logo.svg" alt="Thonia Foods" width="64px" height="64px" />
-  <h2>Thonia Foods</h2>
+  <h2 style="color: white;">Thonia Foods</h2>
   <form onsubmit={handleSubmit} >
 <div class="mb-3" style="margin-top: 24px;">
   <!-- <label for="emailInput" class="form-label">Email</label> -->
