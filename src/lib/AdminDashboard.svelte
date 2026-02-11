@@ -19,13 +19,35 @@
     let recents = $state([]); // Kitchen Table submissions in the last 24hrs
 
     let fetchingOrders = $state(false);
-    async function getRecentOrders() {
+    // async function getRecentOrders() {
+    //     try {
+    //         fetchingOrders = true;
+    //         const token = localStorage.getItem("token");
+    //         const res = await axios.get('https://thonia-foods-server.onrender.com/api/orders/', { 
+    //             headers: { Authorization: `Bearer ${token}`},
+    //         });
+    //        /* const res = await axios.get('http://localhost:5000/api/orders/', { 
+    //             headers: { Authorization: `Bearer ${token}`},
+    //         })*/
+    //         if (res) {
+    //             recentOrders = res.data;
+    //         }
+    //     } catch (err) {
+    //         console.error(err);
+    //     } finally {
+    //         fetchingOrders = false;
+    //     }
+    // } 
+        async function getDailySales() {
         try {
             fetchingOrders = true;
             const token = localStorage.getItem("token");
-            const res = await axios.get('https://thonia-foods-server.onrender.com/api/orders/', { 
+            const res = await axios.get('https://thonia-foods-server.onrender.com/api/orders/daily-sales', { 
                 headers: { Authorization: `Bearer ${token}`},
-            })
+            });
+           /* const res = await axios.get('http://localhost:5000/api/orders/', { 
+                headers: { Authorization: `Bearer ${token}`},
+            })*/
             if (res) {
                 recentOrders = res.data;
             }
@@ -56,8 +78,16 @@
 
     function handleShowOrders() {
         showOrders = true;
-        getRecentOrders()
+       // getRecentOrders()
+       getDailySales();
     }
+    //the admin selects a date from a calendar widget, you can format it as a string (YYYY-MM-DD)
+    async function fetchDaily(dateString) {
+  const res = await fetch(`/search-daily?date=${dateString}`);
+  const data = await res.json();
+  return data;
+}
+
     function handleHideOrders() {
         showOrders = false
     }
@@ -73,6 +103,7 @@
     let showKitchenModal = $state(false)
     function openKitchenModal() {
     showKitchenModal = true;
+    getEntries()
     
   }
 
@@ -142,7 +173,7 @@
 <div class="wrap-div">
     <section class="top-section">
     <h3>Today's sales</h3>
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#dailyOrdersModal">Show sales</button>
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#dailyOrdersModal" onclick={handleShowOrders}>Show sales</button>
     <!-- <button class="recents-btn" onclick={handleShowOrders}>{fetchingOrders ? 'Fetching..' : 'Show orders'}</button>
     {#if showOrders}
     <button onclick={handleHideOrders}>Hide orders</button>
@@ -175,7 +206,7 @@
 </section>
 <!--Orders Modal -->
 <div class="modal fade" id="dailyOrdersModal" tabindex="-1" aria-labelledby="dailyOrdersModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title heading" id="dailyOrdersModalLabel">Sales for {new Date().toISOString().substring(0, 10)}</h5>
@@ -187,20 +218,33 @@
         <thead>
             <tr>
             <th>Order ID</th>
-            <th>When</th>
+            <th>Time</th>
             <th>Attendant</th>
-            <th>Total</th>
-            <th>Payment</th>
+            <th>Items</th>
+            <th>Payment by</th>
+            <th>Paid</th>
             </tr>
         </thead>
         <tbody>
             {#each recentOrders as order}
                 <tr>
                     <td data-label="Order ID">{order.orderId}</td>
-                    <td data-label="When">{new Intl.DateTimeFormat("en-GB", {dateStyle:"short",timeStyle: "medium"}).format(new Date(order.createdAt))}</td>
+                    <td data-label="Time">{new Intl.DateTimeFormat("en-GB", {dateStyle:"short",timeStyle: "medium"}).format(new Date(order.createdAt))}</td>
                     <td data-label="Attendant">{order.attendant}</td>
-                    <td data-label="Total">₦{order.total}</td>
+                    
+                    <td data-label="Items">
+                        <div class="items-container">
+                            {#each order.items as item}
+                            <span class="item-badge">
+                                {item.name} ×{item.quantity} ₦{item.subTotal}
+                            </span>
+                            {/each}
+                        </div>
+                    </td>
+
                     <td data-label="Payment">{order.paidBy}</td>
+                    <td data-label="Paid" style="text-decoration:underline;"><strong>₦{order.total}</strong></td>
+                    
                 </tr>
             {/each}
         </tbody>
@@ -371,11 +415,26 @@
     .heading {
         font-size: small;
     }
-    .recents-btn {
+    .items-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    }
+
+    .item-badge {
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    color: #333;
+    white-space: nowrap;
+    }
+
+   /* .recents-btn {
         color: white;
         margin: 6px;
         background: rgb(68, 99, 68);
-    }
+    }*/
     .set-stock-section {
         margin-top: 18px;
     }
@@ -399,6 +458,9 @@
 
   .responsive-table th {
     background-color: #f2f2f2;
+  }
+  .modal-content {
+    width: 680px;
   }
 
   @media (max-width: 600px) {
@@ -427,6 +489,9 @@
       font-weight: bold;
       margin-right: 10px;
     }
+    .modal-content {
+    max-width: 260px;
+  }
   }
 </style>
 
