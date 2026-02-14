@@ -22,7 +22,7 @@
 </style>
 
 <section>
-    <h3>{userState.firstname}'s Profile</h3>
+    <h3 style="color: whitesmoke;">{userState.firstname}'s Profile</h3>
     {#if userState.role === "admin"}
         <p>You're logged in as {userState.role}</p>
     {/if}

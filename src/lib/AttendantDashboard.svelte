@@ -7,18 +7,12 @@
   // import returnCurrentDateTime from "../helpers/returnCurrentDateTime";
   // import Receipt from "./Receipt.svelte";
 
-    let itemName = $state('');
-  //  let items = $state([])
-      // Runes syntax states
-  // let items = $state([
-  //   { food: 'Beans', qty: 20, unit: 200, count: 0, expected: 4000, total: 0 },
-  //   { food: 'Ofada rice', qty: 10, unit: 300, count: 0, expected: 3000, total: 0 },
-  //   { food: 'Spaghetti', qty: 15, unit: 100,  count: 0, expected: 1500, total: 0 },
-  //   { food: 'Fried rice', qty: 10, unit:250, count: 0, expected: 2500, total: 0 }
-  // ]);
-  let food = $state([])
+  let itemName = $state('');
 
+  let food = $state([])
+  let snacks = $state([])
   let drinks = $state([])
+
   //   /** @typedef {Object} Drink ... */
 //   /**
 //  * @typedef {Object} Drink
@@ -60,7 +54,10 @@
     try {
       confirming = true;
       const token = localStorage.getItem("token");
-      const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/serving/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
+      // const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
+      //         headers: { Authorization: `Bearer ${token}`},
+      //       });
+            const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
               headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
@@ -71,8 +68,7 @@
     } finally {
       confirming = false;
     }
-    // confirmation = `${foodConfirm} weight: ${wgtConfirm}`;
-    // alert(confirmation); 
+ 
   }
   function clearConfirm() {
     foodConfirm = "";
@@ -80,26 +76,38 @@
     confirmation = ""
   }
 
-  let getservingCount = $state(0);
-  function handleGetServing() {
-    // if block is to check fetching stale data
-    if (getservingCount < food.length && food.length > 0) {
-      getServing();
-    }// getservingCount < food
-  }
-  async function getServing() {
+ // let getservingCount = $state(0);
+  // function handleGetServing() {
+  //   // if block is to check fetching stale data
+  //   if (getservingCount < food.length && food.length > 0) {
+  //     getServing();
+  //   }// getservingCount < food
+  // }
+
+  async function getRecentKitchen() {
     try {      
       const token = localStorage.getItem("token");
-      const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/serving/recent", { 
+      // const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/recent", { 
+      //           headers: { Authorization: `Bearer ${token}`},
+      //       });
+            const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/recent", { 
                 headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
-        res.data.forEach(obj => {
-          const temp = {...obj, count:0, sales:0}
+        // console.log("Serving: ", res.data)
+        // console.log("Food: ", res.data.foodData)
+        // console.log("Snack: ", res.data.snackData)
+        res.data.foodData.forEach(datum => {
+          const temp = {...datum, count: 0, sales: 0};
           food.push(temp);
-          getservingCount = food.length;
           localStorage.setItem("food", JSON.stringify(food));
         });
+        res.data.snackData.forEach(datum => {
+          const temp = {...datum, count: 0, sales: 0};
+          snacks.push(temp);
+          localStorage.setItem("snacks", JSON.stringify(snacks));
+        });
+
       }
     
     } catch (err) {
@@ -115,12 +123,9 @@
 
   //   // Grand total (reactive derived value)
   // let grandTotal = $derived(items.reduce((sum, item) => sum + item.total, 0));
-
-   let startOrder = $state(false);
-   let checkingOut = $state(false);
-
-   let orderStorage = $state([]);
-
+  
+  let startOrder = $state(false);
+  let checkingOut = $state(false);
      /** New Order vars */
   /**
  * @typedef {Object} foodObj
@@ -130,6 +135,15 @@
  */
   const foodObj = $state({name:'', quantity:0,subTotal:0});
   let foodCount = $state(0);
+
+  /**
+ * @typedef {Object} snackObj
+ * @property {string} name - The name of the object.
+ * @property {number} quantity - The quantity associated with the object.
+ * @property {number} subTotal - The subTotal associated with the object.
+ */
+  const snackObj = $state({name:'', quantity:0,subTotal:0});
+  let snackCount = $state(0);  
 
 /**
  * @typedef {Object} drinkObj
@@ -141,33 +155,41 @@
   let drinkCount = $state(0);
 
   let foodTotal = $state(0);
+  let snackTotal = $state(0)
   let drinkTotal = $state(0);
 
-   function newOrder() {
-    startOrder = true;
-    // const storedOrder = localStorage.getItem("storedOrder");
-    // if (storedOrder) {
-    //   localStorage.removeItem("storedOrder");
-    //   orderStorage = [];
-    // } else {
-    //   localStorage.setItem("storedOrder", JSON.stringify(orderStorage))
-    // }
-   }
+  //   // let orderStorage = $state([]);
+  //  function newOrder() {
+  //   startOrder = true;
+  //   // const storedOrder = localStorage.getItem("storedOrder");
+  //   // if (storedOrder) {
+  //   //   localStorage.removeItem("storedOrder");
+  //   //   orderStorage = [];
+  //   // } else {
+  //   //   localStorage.setItem("storedOrder", JSON.stringify(orderStorage))
+  //   // }
+  //  }
 
   //========================
   function updateFoodLocalStorage() {
     localStorage.setItem("food", JSON.stringify(food))
   }
+  function updateSnacksLocalStorage() {
+    localStorage.setItem("snacks", JSON.stringify(snacks))
+  }
   function updateDrinkLocalStorage() {
     localStorage.setItem("drinks", JSON.stringify(drinks))
   }
+  //=====================================
    
    let addDrinkErrorMsg = $state('');
+   let addDrinkLoading = $state(false);
   async function addDrink(event) {
       event.preventDefault();
       addDrinkErrorMsg = '';// Reset error msg
     if (itemName.length >= 3) {
       try {
+        addDrinkLoading = true;
         const token = localStorage.getItem("token");
         const res = await axios.get("https://thonia-foods-server.onrender.com/api/menu", { 
             params: {name: itemName.trim().toLowerCase()},
@@ -194,35 +216,51 @@
         } else {
           console.error(err.message);
         }
+      } finally {
+        addDrinkLoading = false;
       }
     } else {
         alert("Enter the item name first!")
     }
   }
 
-  function increment(item) {
-    if (item.sales > 0 && item.sales < item.expectedTotal) {
-      item.qty++;
-      item.count--;
-      foodCount--;
-      item.sales = item.count * item.price;
-     // console.log(`Food inc item.count:${item.count} & foodCount:${foodCount}`);
+  // function increment(item) {
+  //   if (item.sales > 0 && item.sales < item.expectedTotal) {
+  //     item.qty++;
+  //     item.count--;
+  //     foodCount--;
+  //     item.sales = item.count * item.price;
+  //    // console.log(`Food inc item.count:${item.count} & foodCount:${foodCount}`);
   
-      updateFoodLocalStorage();
-      foodObj['name'] = item.name;
-      foodObj['quantity'] = foodCount;
-      foodObj['subTotal'] = item.price * foodCount;
+  //     updateFoodLocalStorage();
+  //     foodObj['name'] = item.name;
+  //     foodObj['quantity'] = foodCount;
+  //     foodObj['subTotal'] = item.price * foodCount;
 
-     // foodItems.pop();
-      //const obj = {name: item.name, unit: item.price, quantity: item.count, subTotal: item.price * item.count};
-     // foodItems.push(foodObj);
-      } else {
-      item.qty = item.qty
+  //    // foodItems.pop();
+  //     //const obj = {name: item.name, unit: item.price, quantity: item.count, subTotal: item.price * item.count};
+  //    // foodItems.push(foodObj);
+  //     } else {
+  //     item.qty = item.qty
       
+  //   }
+  // } 
+ function snackDecrement(item) {
+  if (item.qty > 0) {
+    item.qty--;
+    item.count++;
+    snackCount++;
+    item.sales = item.count * item.price;
+    updateSnacksLocalStorage();
+    snackObj['name'] = item.name;
+    snackObj['quantity'] = snackCount;
+    snackObj['subTotal'] = item.price * snackCount;
+  } else {
+        item.qty = 0;
+        
     }
-  } 
-
-  function decrement(item) {
+ }
+  function foodDecrement(item) {
     if (item.qty > 0) {
       item.qty--;
       item.count++;
@@ -241,88 +279,118 @@
         
     }
   }
-    function drinkDecrement(item) {
+  async function drinkDecrement(item) {
     if (item.quantity > 0) {
       item.quantity--;
       item.count++;
       drinkCount++;
       item.sales = item.count * item.price;
-
+      
       updateDrinkLocalStorage();
       drinkObj['name'] = item.name;
       drinkObj['quantity'] = drinkCount;
       drinkObj['subTotal'] = item.price * drinkCount;
-    //  drinkItems.pop();
-     // const obj = {name: item.name, unit: item.price, quantity: item.count, subTotal: item.price * item.count};
-    //  drinkItems.push(drinkObj);
+        const token = localStorage.getItem("token");
+        const res = await axios.put("https://thonia-foods-server.onrender.com/api/menu/update-drink-quantity", {name: drinkObj.name.trim().toLowerCase(), quantity: item.quantity}, {headers: { Authorization: `Bearer ${token}`}})
+
+        if (res) {
+          console.log(res.data)
+        }
     } else {
         item.quantity = 0;
         
     }
   }
 
-function drinkIncrement(item) {
-  if (item.count > 0 && item.count < item.quantity) {
-        item.quantity++;
-        item.count--;
-        drinkCount--;
-        item.sales = item.count * item.price;
+// function drinkIncrement(item) {
+//   if (item.count > 0 && item.count < item.quantity) {
+//         item.quantity++;
+//         item.count--;
+//         drinkCount--;
+//         item.sales = item.count * item.price;
         
-      //   drinkItems.pop();
-      // const obj = {name: item.name, unit: item.price, quantity: item.count, subTotal: item.price * item.count};
-      // drinkItems.push(obj);
-        updateDrinkLocalStorage();
-        drinkObj['name'] = item.name;
-        drinkObj['quantity'] = drinkCount;
-        drinkObj['subTotal'] = item.price * drinkCount;
+//       //   drinkItems.pop();
+//       // const obj = {name: item.name, unit: item.price, quantity: item.count, subTotal: item.price * item.count};
+//       // drinkItems.push(obj);
+//         updateDrinkLocalStorage();
+//         drinkObj['name'] = item.name;
+//         drinkObj['quantity'] = drinkCount;
+//         drinkObj['subTotal'] = item.price * drinkCount;
         
-      } else {
-      item.quantity = item.quantity
+//       } else {
+//       item.quantity = item.quantity
       
+//     }
+//   } 
+ function removeSnackItem(idx) {
+  if (window.confirm("Are you sure you want to remove this item from the Snacks sales list section?")) {
+    snacks.splice(idx, 1);
+    if (snackObj.quantity > 0) {
+      orderTotal = orderTotal - snackObj.subTotal;
     }
-  } 
+    updateSnacksLocalStorage();
+    if (snacks.length === 0) {
+      localStorage.removeItem('snacks')
+    }
 
-  function removeItem(index) {
-    food.splice(index, 1);
-    updateFoodLocalStorage();
-    // Clear localstorage to avoid leaving empty []
-    if (food.length === 0) {
-      localStorage.removeItem('food');
+  }
+ }
+  function removeFoodItem(index) {
+    if (window.confirm("Are you sure you want to remove this item from the Food sales section?")) {
+      food.splice(index, 1);
+      if (foodObj.quantity > 0) {
+        orderTotal = orderTotal - foodObj.subTotal;
+      }
+      updateFoodLocalStorage();
+      // Clear localstorage to avoid leaving empty []
+      if (food.length === 0) {
+        localStorage.removeItem('food');
+      }
+
     }
   }
-  function removeDrink(idx) {
-    drinks.splice(idx, 1);
-    updateDrinkLocalStorage();
-    // Clear localstorage to avoid leaving empty []
+  function removeDrinkItem(idx) {
+    if (window.confirm("Are you sure you want to remove this item from the Drinks sales list section?")) {
+      drinks.splice(idx, 1);
+      if (drinkObj.quantity > 0) {
+        orderTotal = orderTotal - drinkObj.subTotal;
+      }
+      updateDrinkLocalStorage();
+      // Clear localstorage to avoid leaving empty []
         if (drinks.length === 0) {
-      localStorage.removeItem('drinks');
+          localStorage.removeItem('drinks');
+        }
     }
   }
 
-  function clearAllLocalStorage() { 
-    food.splice(0, food.length); // remove everything 
-    drinks.splice(0, drinks.length);
-    // reset with one blank row 
+  // function clearAllLocalStorage() { 
+  //   food.splice(0, food.length); // remove everything 
+  //   drinks.splice(0, drinks.length);
+  //   // reset with one blank row 
 
-    // items.push({ food: '', qty: 0, unit:0, count: 0, expected: 2500, total: 0 }); 
-    }
+  //   // items.push({ food: '', qty: 0, unit:0, count: 0, expected: 2500, total: 0 }); 
+  //   }
 
     // Grand total (reactive derived value)
 //  let grandTotal = $derived(food.reduce((sum, item) => sum + item.sales, 0));
 
-  let orderTotal = $derived(foodObj.subTotal + drinkObj.subTotal);
+  let orderTotal = $derived(foodObj.subTotal + snackObj.subTotal + drinkObj.subTotal); // Shows Total at bottom of checkout
   let paymentMode = $state('');
-  let orderid = $state('');
-  let waiter = $state('');
-  let time = $state('');
-  let total = $state(0);
-  let mode = $state('');
-  let cart = $state({});
-  let checkoutDone = $state(false);
+  // let orderid = $state('');
+  // let waiter = $state('');
+  // let time = $state('');
+  // let total = $state(0);
+  // let mode = $state('');
+  // let cart = $state({});
+  //let checkoutDone = $state(false);
   let foodOrder = $state(null);
+  let snackOrder = $state(null)
   let drinkOrder = $state(null);
 
   async function checkOut() {
+    if (orderTotal === 0) {
+      alert("Error: No order to complete!");
+    }
     try {
       checkingOut = true;
       if (Object.keys(foodObj).length > 0) {
@@ -334,6 +402,16 @@ function drinkIncrement(item) {
         foodOrder = {name:foodObj.name, quantity: foodObj.quantity, subTotal: foodObj.subTotal}
       } else {
         foodTotal = 0;
+      }
+      if (Object.keys(snackObj).length > 0) {
+        Object.entries(snackObj).forEach(([k,v]) => {
+          if (k === 'subTotal') {
+            snackTotal += +v;
+          }
+        })
+        snackOrder = {name:snackObj.name, quantity: snackObj.quantity, subTotal: snackObj.subTotal}
+      } else {
+        snackTotal = 0;
       }
 
       if (Object.keys(drinkObj).length > 0) {
@@ -359,15 +437,19 @@ function drinkIncrement(item) {
         orderId: Math.random().toString(36).slice(2),
        
         attendant: `${userState.firstname} ${userState.lastname}`,
-        items: [foodOrder, drinkOrder],
-        total: drinkTotal + foodTotal,
+        items: [foodOrder, snackOrder, drinkOrder],
+        total: drinkTotal + foodTotal + snackTotal,
         paidBy: paymentMode
       }
       const token = localStorage.getItem("token");
-      const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
+      // const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
+      //         headers: { Authorization: `Bearer ${token}`},
+      //   });
+            const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
               headers: { Authorization: `Bearer ${token}`},
         });
         if (res) {
+     
           alert(`Completed order`);
         //  console.log(res.data);
         }
@@ -386,24 +468,29 @@ function drinkIncrement(item) {
       //   paid via: ${paidBy}
       //   `); 
 
-    orderid = newOrder.orderId;
-    mode = newOrder.paidBy;
-    waiter = newOrder.attendant;
+  //   orderid = newOrder.orderId;
+  //   mode = newOrder.paidBy;
+  //   waiter = newOrder.attendant;
  
-    total = newOrder.total;
-    cart = newOrder.items; 
-    checkoutDone = true;   
+  //   total = newOrder.total;
+  //   cart = newOrder.items; 
+  //  // checkoutDone = true;   
        
     startOrder = false;
     foodObj["name"] = "";
     foodObj["quantity"] = 0;
     foodObj["subTotal"] = 0;
+    snackObj["name"] = "";
+    snackObj["quantity"] = 0;
+    snackObj["subTotal"] = 0;
     drinkObj["name"] = "";
     drinkObj["quantity"] = 0;
     drinkObj["subTotal"] = 0;
     foodCount = 0;
+    snackCount = 0;
     drinkCount = 0;
     foodTotal = 0;
+    snackTotal = 0;
     drinkTotal = 0;
     orderTotal = 0;
     paymentMode = ''
@@ -417,15 +504,17 @@ function drinkIncrement(item) {
 
  onMount(() => {
    const storedFood = localStorage.getItem("food");
+   const storedSnacks = localStorage.getItem("snacks");
    const storedDrinks = localStorage.getItem("drinks");
-   if (storedFood) {
-     food = JSON.parse(storedFood)
-    } else {
-      getServing();
-  }
-  if (storedDrinks) {
+   if (storedDrinks) {
     drinks = JSON.parse(storedDrinks)
-  }
+   }
+   if (!storedFood || !storedSnacks) {
+    getRecentKitchen();
+   } else {
+    food = JSON.parse(storedFood);
+    snacks = JSON.parse(storedSnacks)
+   }
  })   
 
 </script>
@@ -506,6 +595,15 @@ function drinkIncrement(item) {
     display: inline-flex;
     justify-content: center;
     align-items: center;
+    background: slateblue;
+    color: white;
+  }
+  @keyframes rotate {
+    from {transform: rotate(0deg);}
+    to {transform: rotate(360deg);}
+  }
+  .hour-glass {
+    animation: rotate 2s linear infinite;
   }
    /* .clear {
     background: darkorange;
@@ -547,6 +645,9 @@ function drinkIncrement(item) {
     display: flex;
     flex-direction: column;
     align-items: center;
+    max-height: 150px;
+    overflow-y: auto;
+    /* border: 1px solid magenta; */
 
   }
   .kitchen-stats-div ul li {
@@ -584,7 +685,7 @@ function drinkIncrement(item) {
   .weight-confirm-section input {
     padding: 6px;
     border: none;
-    border-radius: 24px;
+    border-radius: 8px;
   }
 
   /** The Orders list drinks section styles*/
@@ -631,19 +732,26 @@ function drinkIncrement(item) {
     {/each}
    </div> -->
    <div class="kitchen-stats-div">
-   <!-- <p style="margin-left: 24px;">Kitchen <img src="/refresh-arrows-nobg.svg" alt="refresh" width="20px" height="20px" class="refresher" onclick={handleGetServing}/></p> -->
-    <p style="margin-left: 24px;">Kitchen Table</p>
+    {#if food.length > 0 || snacks.length > 0}
+    <p><strong>Kitchen Table</strong></p>
    <ul>
-   {#each food as row}
-    <li>{row.name}: {row.wgt/1000}Kg/{row.qty} portions</li>
+   {#each food as f}
+    <li>{f.name}: {f.wgt/1000}Kg/{f.qty} portions</li>
+   {/each}
+    {#each snacks as s}
+    <li>{s.name}: {s.qty} pieces</li>
    {/each}
    </ul>
+   {:else}
+   <p>Kitchen Table shows here</p>
+    {/if}
+   <!-- <p style="margin-left: 24px;">Kitchen <img src="/refresh-arrows-nobg.svg" alt="refresh" width="20px" height="20px" class="refresher" onclick={handleGetServing}/></p> -->
    </div>
 <hr/>
 <section class="weight-confirm-section">
-  <h5>Confirm weight</h5>
+  <h5>Confirm food weight</h5>
   <form onsubmit={confirmKitchenTable}>
-  <input placeholder="food/snack" bind:value={foodConfirm}/>
+  <input placeholder="food name" bind:value={foodConfirm}/>
   <input type="number" placeholder="Weight" bind:value={wgtConfirm}/>
   <button type="submit">{confirming ? 'Wait..' : 'Confirm'}</button>
   </form>
@@ -657,46 +765,77 @@ function drinkIncrement(item) {
   <input type="text" bind:value={itemName} placeholder="Item name" />
   <button class="item-add" onclick={addItem}>✖</button>
 </div> -->
-<h4>Orders list</h4>
 <div class="controls">
   <form onsubmit={addDrink}>
-  <input type="text" style="padding: 6px;border:none;border-radius:24px;" bind:value={itemName} placeholder="Add drink" />
-  <button type="submit" class="item-add">+</button>
+    <input type="text" style="padding: 6px;border:none;border-radius:8px;" bind:value={itemName} placeholder="Add drink" />
+  <button type="submit" class={addDrinkLoading ? 'item-add hour-glass' : "item-add"}>{addDrinkLoading ? '⌛' : '+'}</button>
   </form>
   {#if addDrinkErrorMsg}
-    <p style="color: red;">{addDrinkErrorMsg}</p>
+  <p style="color: red;">{addDrinkErrorMsg}</p>
   {/if}
 </div>
+<h4>Sales list</h4>
 <!--[TODO]:ClearAll what? -->
 <!-- <button class="clear" onclick={clearAllLocalStorage}>Clear All</button> -->
 <div class="items-list-div">
-  <h5>Snacks/Food</h5>
+  <h5>Food</h5>
   {#each food as item, i}     
         <div style="display: flex;flex-wrap:wrap; padding:10px;justify-content:space-around; align-items:center">
           <!-- Food input -->
           <!-- <input type="text" bind:value={item.food} placeholder="Item name" /> -->
           <span class="item-food-span">{item.name}{item.addition ? '★' : null}</span>
            <!-- Qty control -->
-      <button id="decQty" onclick={() => decrement(item)} disabled={startOrder === false}>-</button>
+      <button id="decQty" onclick={() => foodDecrement(item)} disabled={startOrder === false}>-</button>
       <span>{item.qty}</span>
       <!-- <button id="incQty" onclick={() => increment(item)} disabled={startOrder === false}>+</button> -->
       <!-- Count -->
-      <span>quantity: {item.count}</span>
+      <span>quantity: {foodObj.quantity}</span>
       <span>|</span>
       <!-- Expected -->
-      <span> <strong>₦{item.expectedTotal}</strong></span>
-      <span>|</span>
+      <!-- <span> <strong>₦{item.expectedTotal}</strong></span>
+      <span>|</span> -->
       <!-- Total -->
-      <span>Total: ₦{item.sales}</span>
+      <!-- <span>SubTotal: ₦{item.sales}</span> -->
+       <span>SubTotal: ₦{foodObj.subTotal}</span>
       <!-- Remove button -->
-      <button class="remove" onclick={() => removeItem(i)}>X</button>
+      <button class="remove" onclick={() => removeFoodItem(i)}>X</button>
       
       </div>
 
       <!-- <button class="remove" onclick={() => removeItem(i)}>✖</button> -->
   
     {:else}
-        <p>Served snacks/food show here.</p>
+        <p>Served food show here.</p>
+  {/each}
+  <hr/>
+  <h5>Snacks</h5>
+  {#each snacks as snack, i}
+            <div style="display: flex;flex-wrap:wrap; padding:10px;justify-content:space-around; align-items:center">
+          <!-- Food input -->
+          <!-- <input type="text" bind:value={item.food} placeholder="Item name" /> -->
+          <span class="item-food-span">{snack.name}{snack.addition ? '★' : null}</span>
+           <!-- Qty control -->
+      <button id="decQty" onclick={() => snackDecrement(snack)} disabled={startOrder === false}>-</button>
+      <span>{snack.qty}</span>
+      <!-- <button id="incQty" onclick={() => increment(item)} disabled={startOrder === false}>+</button> -->
+      <!-- Count -->
+      <span>quantity: {snackObj.quantity}</span>
+      <span>|</span>
+      <!-- Expected -->
+      <!-- <span> <strong>₦{snack.expectedTotal}</strong></span>
+      <span>|</span> -->
+      <!-- Total -->
+      <!-- <span>SubTotal: ₦{snack.sales}</span> -->
+       <span>SubTotal: ₦{snackObj.subTotal}</span>
+      <!-- Remove button -->
+      <button class="remove" onclick={() => removeSnackItem(i)}>X</button>
+      
+      </div>
+
+      <!-- <button class="remove" onclick={() => removeItem(i)}>✖</button> -->
+  
+    {:else}
+        <p>Served snacks show here.</p>
   {/each}
   <hr/>
   <h5>Drinks</h5>
@@ -712,12 +851,13 @@ function drinkIncrement(item) {
     </div>
     <div class="drinkOrdersStatDiv">
           <!-- Count -->
-          <span>qty: {drink.count}</span>
+          <span>quantity: {drinkObj.quantity}</span>
           <span>|</span>
           <!-- Total -->
-          <span>Total: ₦{drink.sales}</span>
+          <!-- <span>SubTotal: ₦{drink.sales}</span> -->
+           <span>SubTotal: ₦{drinkObj.subTotal}</span>
           <!-- Remove button -->
-          <button class="remove" onclick={() => removeDrink(x)}>X</button>
+          <button class="remove" onclick={() => removeDrinkItem(x)}>X</button>
           
     </div>
   </div>
@@ -735,10 +875,12 @@ function drinkIncrement(item) {
     <option value="card">Card</option>
    </select>
   {/if}
+
+  <hr/>
     <!-- Grand total -->
   <div class="grand-total">
     Order Total: ₦{orderTotal}
-    <button class={!startOrder ? 'new-order-btn' : 'checkout-btn'} onclick={() => !startOrder ? newOrder() : checkOut()}>{startOrder ? 'Complete' : checkingOut ? 'Processing' : 'New Order'}</button>
+    <button class={!startOrder && orderTotal === 0 ? 'new-order-btn' : 'checkout-btn'} onclick={() => !startOrder || orderTotal === 0 ? startOrder = true : checkOut()}>{startOrder || orderTotal !== 0 ? 'Complete' : checkingOut ? 'Processing' : 'New Order'}</button>
   </div>
   <!-- {#if checkoutDone}
   <Receipt orderid={orderid} mode={mode} total={total} cart={cart} waiter={waiter} />

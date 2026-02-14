@@ -1,6 +1,12 @@
 <script>
     import axios from "axios";
     //https://thonia-foods-server.onrender.com
+    import CustomModal from "./CustomModal.svelte";
+
+    let isCustomModalOpen = $state(false);
+    function openCustomModal() {
+        isCustomModalOpen = true;
+    }
 
     let showOrders = $state(false);
     let showKitchen = $state(false);
@@ -8,8 +14,9 @@
     let coolerName = $state('');
     let coolerWeight = $state(0);
     let scoopWeight = $state(0);
-    let loadingAdd = $state(false);
+    
     let loadingCreate = $state(false);
+    let menuAction = $state("");
     let menuItemName = $state('');
     let menuItemPrice = $state(0);
     let menuItemCategory = $state('') // Food or Drink
@@ -45,9 +52,9 @@
             const res = await axios.get('https://thonia-foods-server.onrender.com/api/orders/daily-sales', { 
                 headers: { Authorization: `Bearer ${token}`},
             });
-           /* const res = await axios.get('http://localhost:5000/api/orders/', { 
-                headers: { Authorization: `Bearer ${token}`},
-            })*/
+        //    const res = await axios.get('http://localhost:5000/api/orders/daily-sales', { 
+        //         headers: { Authorization: `Bearer ${token}`},
+        //     })
             if (res) {
                 recentOrders = res.data;
             }
@@ -63,11 +70,17 @@
         try {
             fetching = true;
             const token = localStorage.getItem("token");
-            const res = await axios.get('https://thonia-foods-server.onrender.com/api/kitchen/serving/recent', { 
+            // const res = await axios.get('http://localhost:5000/api/kitchen/recent', { 
+            //     headers: { Authorization: `Bearer ${token}`},
+            // })
+            const res = await axios.get('https://thonia-foods-server.onrender.com/api/kitchen/recent', { 
                 headers: { Authorization: `Bearer ${token}`},
             })
             if (res) {
-                recents = res.data;
+                const foodData = res.data.foodData;
+                const snackData = res.data.snackData;
+                const result = [...foodData, ...snackData]
+                recents = result;//res.data;
             }
         } catch (err) {
             console.error(err);
@@ -76,6 +89,39 @@
         }
     } 
 
+    //==============================
+    //  let showMenuModal = $state(false);
+    // function openMenuModal() {
+    //     showMenuModal = true;
+    // }
+    // function closeMenuModal() {
+    //     showMenuModal = false;
+    // }
+    let getting = $state(false);
+    let currentMenu = $state([])
+    async function getCurrentMenu() {
+       // openMenuModal();
+       openCustomModal()
+        try {
+            getting = true;
+            const token = localStorage.getItem("token");
+            const res = await axios.get('https://thonia-foods-server.onrender.com/api/menu/all', { 
+                headers: { Authorization: `Bearer ${token}`},
+            })
+           
+            if (res) {
+                
+            currentMenu = res.data;
+              
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            getting = false;
+        }
+    } 
+    //================================
+
     function handleShowOrders() {
         showOrders = true;
        // getRecentOrders()
@@ -83,21 +129,9 @@
     }
     //the admin selects a date from a calendar widget, you can format it as a string (YYYY-MM-DD)
     async function fetchDaily(dateString) {
-  const res = await fetch(`/search-daily?date=${dateString}`);
-  const data = await res.json();
-  return data;
-}
-
-    function handleHideOrders() {
-        showOrders = false
-    }
-    
-    function handleShowKitchen() {
-        showKitchen = true;
-        getEntries()
-    }
-    function handleHideKitchen() {
-        showKitchen = false
+        const res = await fetch(`/search-daily?date=${dateString}`);
+        const data = await res.json();
+        return data;
     }
 
     let showKitchenModal = $state(false)
@@ -112,31 +146,49 @@
     
   }
 
+  let loadingAdd = $state(false);
+  let loadingEdit = $state(false);
     async function addMenuItem(event) {
         event.preventDefault();
         if (menuItemName === '' || menuItemPrice === 0 || menuItemCategory === '') {
             alert("You haven't filled all the information!");
             return
         }
-        loadingAdd = true;
+
+        let added;
+        let edited;
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post('https://thonia-foods-server.onrender.com/api/menu', {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
-                headers: { Authorization: `Bearer ${token}`},
-            })
-
-            if (res) {
+            if (menuAction === "add") {
+                loadingAdd = true;
+                added = await axios.post('https://thonia-foods-server.onrender.com/api/menu', {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
+                    headers: { Authorization: `Bearer ${token}`},
+                })
+                if (added) {
                 alert(`Added: ${menuItemName} to ${menuItemCategory} category.`);
+                }
+            } else if (menuAction === "edit") {
+               loadingEdit = true;
+                edited = await axios.put(`https://thonia-foods-server.onrender.com/api/menu/edit-item`, {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
+                    headers: { Authorization: `Bearer ${token}`},
+                })
+                if (edited){
+                    console.log("Edit res", edited.data);
+                    alert(`Updated Menu..`);
+                }
+            }
+
                 menuItemName = "";
                 menuItemPrice = 0;
                 menuItemCategory = '';
                 menuItemQty = 0;
 
-            }
+            
         } catch (err) {
             console.error(err)
         } finally {
             loadingAdd = false;
+            loadingEdit = false;
         }
     }
 
@@ -149,6 +201,9 @@
         loadingCreate = true;
         try {
             const token = localStorage.getItem("token");
+            // const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/add-container', {name:coolerName.trim().toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
+            //     headers: { Authorization: `Bearer ${token}`},
+            // })
             const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/add-container', {name:coolerName.trim().toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
                 headers: { Authorization: `Bearer ${token}`},
             })
@@ -212,7 +267,7 @@
         <h5 class="modal-title heading" id="dailyOrdersModalLabel">Sales for {new Date().toISOString().substring(0, 10)}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
+      <!-- <div class="modal-body">
         {#if recentOrders.length > 0}
         <table class="responsive-table">
         <thead>
@@ -252,6 +307,47 @@
     {:else}
     <p>No sales yet!</p>
     {/if}
+      </div> -->
+      <div class="modal-body scrollable-table-container">
+        {#if recentOrders.length > 0}
+        <table class="h-scroll-table">
+            <thead>
+                <tr>
+                    <th scope="col">Order ID</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Attendant</th>
+                    <th scope="col">Items</th>
+                    <th scope="col">Payment by</th>
+                    <th scope="col">Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {#each recentOrders as order}
+                        <tr>
+                            <td data-label="Order ID">{order.orderId}</td>
+                            <td data-label="Time">{new Intl.DateTimeFormat("en-GB", {dateStyle:"short",timeStyle: "medium"}).format(new Date(order.createdAt))}</td>
+                            <td data-label="Attendant">{order.attendant}</td>
+                            
+                            <td data-label="Items">
+                                <div class="items-container">
+                                    {#each order.items as item}
+                                    <span class="item-badge">
+                                        {item.name} ×{item.quantity} ₦{item.subTotal}
+                                    </span>
+                                    {/each}
+                                </div>
+                            </td>
+
+                            <td data-label="Payment">{order.paidBy}</td>
+                            <td data-label="Paid" style="text-decoration:underline;"><strong>₦{order.total}</strong></td>
+                            
+                        </tr>
+                    {/each}
+            </tbody>
+        </table>
+            {:else}
+                <p>No sales yet!</p>
+            {/if}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -264,33 +360,6 @@
 <section class="top-section">
     <h3>Last 24hrs (Kitchen)</h3>
     <button style="background:teal;color:white;" onclick={openKitchenModal}>Show kitchen</button>
-    <!-- <button class="recents-btn" onclick={handleShowKitchen}>{fetching ? 'Fetching..' : 'Show kitchen'}</button>
-    {#if showKitchen}
-    <button onclick={handleHideKitchen}>Hide kitchen</button>
-    {/if}
-        {#if recents.length > 0 && showKitchen}
-    <table class="responsive-table">
-        <thead>
-            <tr>
-            <th>Name</th>
-            <th>Weight</th>
-            <th>Portions</th>
-            <th>Addition</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each recents as item}
-                <tr>
-                    <td data-label="Name">{item.name}</td>
-                    <td data-label="Weight">{item.wgt}</td>
-                    <td data-label="Portions">{item.qty}</td>
-                    <td data-label="Addition">{item.addition}</td>
-                </tr>
-            {/each}
-        </tbody>
-    </table>
-
-    {/if} -->
 </section>
 <!--Kitchen Modal -->
 {#if showKitchenModal}
@@ -301,33 +370,35 @@
           <h5 class="modal-title heading">Kitchen Table for {new Date().toISOString().substring(0, 10)}</h5>
           <button type="button" aria-label="show kitchen button" class="btn-close" onclick={closeKitchenModal}></button>
         </div>
-        <div class="modal-body">
-    {#if recents.length > 0}        
-    <table class="responsive-table">
-        <thead>
-            <tr>
-            <th>Name</th>
-            <th>Weight</th>
-            <th>Portions</th>
-            <th>Addition</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each recents as item}
-                <tr>
-                    <td data-label="Name">{item.name}</td>
-                    <td data-label="Weight">{item.wgt}</td>
-                    <td data-label="Portions">{item.qty}</td>
-                    <td data-label="Addition">{item.addition}</td>
-                </tr>
-            {/each}
-        </tbody>
-    </table>
-    {:else}
-    <p>Kitchen has sent no data!</p>
-    {/if}
+
+        <div class="modal-body scrollable-table-container">
+            {#if recents.length > 0}
+            <table class="h-scroll-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Weight</th>
+                        <th scope="col">Scoops/Pieces</th>
+                        <th scope="col">Addition</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each recents as item}
+                        <tr>
+                            <td data-label="Name">{item.name}</td>
+                            <td data-label="Weight">{item.wgt}</td>
+                            <td data-label="Portions">{item.qty}</td>
+                            <td data-label="Addition">{item.addition}</td>
+                        </tr>
+                    {/each}
+                </tbody>
+            </table>
+            {:else}
+            <p>Kitchen has sent no data!</p>
+            {/if}
         </div>
         <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick={closeKitchenModal}>Close</button>
         <button type="button" class="btn btn-success">Save</button>
       </div>
       </div>
@@ -336,9 +407,35 @@
 {/if}
 <hr/>
 <section class="top-section">
-    <h3>Stock</h3>
-    <button type="button" class="btn btn-secondary">Show stock</button>
+    <h3>Menu</h3>
+    <button type="button" class="btn btn-secondary" onclick={getCurrentMenu}>Show menu</button>
 </section>
+<CustomModal bind:isOpen={isCustomModalOpen}>
+        <table class="responsive-table">
+        <thead>
+            <tr>
+            <th>Name</th>
+            <th>Unit</th>
+            <th>Category</th>
+            <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each currentMenu as m}
+                {#each m.menu as v}
+                    <tr>
+                        <td data-label="Name">{v.name}</td>
+                        <td data-label="Unit">₦{v.price}</td>
+                        <td data-label="Category">{v.category}</td>
+                        <td data-label="Stock">{v.quantity || 'n/a'}</td>
+                    </tr>
+                {/each}
+            {/each}
+                    
+        </tbody>
+    </table>
+</CustomModal>
+
 <hr/>
 <section class="set-stock-section">
     <!-- <h3>Create Container</h3> -->
@@ -365,7 +462,13 @@
 </section>
 <hr/>
 <section class="set-menu-section">
-    <h3>Add Menu Item</h3>
+    <!-- <h3>Add Menu Item</h3> -->
+    <label for="menu-action" style="font-weight: 700;">Menu item</label><br/>
+    <select id="menu-action" bind:value={menuAction}>
+        <option value="">--Select action--</option>
+        <option value="add">Add Item</option>
+        <option value="edit">Edit Item</option>
+    </select>
         <form onsubmit={addMenuItem}>
     <label for="menuItemName">Snack/Food or Drink</label>
     <input placeholder="snack/food or drink" bind:value={menuItemName} id="menuItemName" />
@@ -373,15 +476,15 @@
     <input type="number" placeholder="In Naira e.g. 2550" bind:value={menuItemPrice} id="menuItemPrice" />
     <br/>
     <label for="menuItemQty">Stock quantity (Drinks/Snacks)</label>
-    <input type="number" placeholder="For drinks" bind:value={menuItemQty} id="menuItemQty" />
+    <input type="number" placeholder="Count per piece" bind:value={menuItemQty} id="menuItemQty" />
         <label for="itemCategory">Category</label>
     <select name="itemCategory" id="itemCategory" bind:value={menuItemCategory}>
-  <option value="">--Choose item category--</option>
+  <option value="">--Choose menu category--</option>
   <option value="snack">Snack</option>
   <option value="food">Food</option>
   <option value="drinks">Drinks</option>
 </select>
-    <button type="submit" class="add-container-btn">{loadingAdd ? 'Adding' : 'Add'}</button>
+    <button type="submit" class="add-container-btn">{loadingAdd || loadingEdit ? 'Wait..' : menuAction === 'edit' ? 'Edit' : 'Add'}</button>
     </form>
 </section>
 </div>
@@ -389,16 +492,17 @@
 
 <style scoped>
     .add-container-btn {
-        width: 68px;
+        width: 74px;
         height: 38px;
         background: green;
         color: white;
         padding: 6px;
         margin: 6px;
     }
-    #container-action {
+    #container-action, #menu-action {
         margin-bottom: 5%;
     }
+
     h3 {
         font-size: medium;
         font-weight: 700;
@@ -445,7 +549,7 @@
     .wrap-div {
         margin: 5% auto;
     }
-          .responsive-table {
+    .responsive-table {
     width: 100%;
     border-collapse: collapse;
   }
@@ -464,7 +568,7 @@
   }
 
   @media (max-width: 600px) {
-        .top-section {
+    .top-section {
         padding-top: 15%;
     }
     .responsive-table thead {
@@ -490,9 +594,51 @@
       margin-right: 10px;
     }
     .modal-content {
-    max-width: 260px;
+        max-width: 310px;
+    }
   }
-  }
+
+  /* 
+  The wrapper DIV that enables horizontal scrolling.
+  This is the key to the entire technique.
+*/
+.scrollable-table-container {
+    overflow-x: auto; /* Enables horizontal scrolling */
+    -webkit-overflow-scrolling: touch; /* Optional: Enables smooth scrolling on iOS devices */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.h-scroll-table {
+    /* The table itself should be allowed to be wider than its container */
+    width: 100%;
+    /* A min-width can prevent the table from becoming too crushed on small screens. */
+    /* Adjust this based on your content. */
+    min-width: 800px; 
+    
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.h-scroll-table thead th {
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+    font-weight: 600;
+}
+.h-scroll-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e9ecef;
+    text-align: left;
+}
+.h-scroll-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.h-scroll-table tbody tr:nth-of-type(even) {
+    /* background-color: #f8f9fa; */
+    background-color: #e3ecf5;
+}
 </style>
 
 
