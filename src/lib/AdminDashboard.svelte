@@ -49,12 +49,12 @@
         try {
             fetchingOrders = true;
             const token = localStorage.getItem("token");
-           /* const res = await axios.get('https://thonia-foods-server.onrender.com/api/orders/daily-sales', { 
+            const res = await axios.get('https://thonia-foods-server.onrender.com/api/orders/daily-sales', { 
                 headers: { Authorization: `Bearer ${token}`},
-            });*/
-           const res = await axios.get('http://localhost:5000/api/orders/daily-sales', { 
-                headers: { Authorization: `Bearer ${token}`},
-            })
+            });
+        //    const res = await axios.get('http://localhost:5000/api/orders/daily-sales', { 
+        //         headers: { Authorization: `Bearer ${token}`},
+        //     })
             if (res) {
                 recentOrders = res.data;
             }
@@ -70,12 +70,12 @@
         try {
             fetching = true;
             const token = localStorage.getItem("token");
-            const res = await axios.get('http://localhost:5000/api/kitchen/recent', { 
-                headers: { Authorization: `Bearer ${token}`},
-            })
-            // const res = await axios.get('https://thonia-foods-server.onrender.com/api/kitchen/recent', { 
+            // const res = await axios.get('http://localhost:5000/api/kitchen/recent', { 
             //     headers: { Authorization: `Bearer ${token}`},
             // })
+            const res = await axios.get('https://thonia-foods-server.onrender.com/api/kitchen/recent', { 
+                headers: { Authorization: `Bearer ${token}`},
+            })
             if (res) {
                 const foodData = res.data.foodData;
                 const snackData = res.data.snackData;
@@ -105,7 +105,7 @@
         try {
             getting = true;
             const token = localStorage.getItem("token");
-            const res = await axios.get('http://localhost:5000/api/menu/all', { 
+            const res = await axios.get('https://thonia-foods-server.onrender.com/api/menu/all', { 
                 headers: { Authorization: `Bearer ${token}`},
             })
            
@@ -161,7 +161,7 @@
             const token = localStorage.getItem("token");
             if (menuAction === "add") {
                 loadingAdd = true;
-                added = await axios.post('http://localhost:5000/api/menu', {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
+                added = await axios.post('https://thonia-foods-server.onrender.com/api/menu', {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
                     headers: { Authorization: `Bearer ${token}`},
                 })
                 if (added) {
@@ -169,7 +169,7 @@
                 }
             } else if (menuAction === "edit") {
                loadingEdit = true;
-                edited = await axios.put(`http://localhost:5000/api/menu/edit-item`, {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
+                edited = await axios.put(`https://thonia-foods-server.onrender.com/api/menu/edit-item`, {name:menuItemName.trim().toLowerCase(), price:menuItemPrice, category: menuItemCategory, quantity:menuItemQty},{ 
                     headers: { Authorization: `Bearer ${token}`},
                 })
                 if (edited){
@@ -201,12 +201,12 @@
         loadingCreate = true;
         try {
             const token = localStorage.getItem("token");
-            // const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/add-container', {name:coolerName.trim().toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
-            //     headers: { Authorization: `Bearer ${token}`},
-            // })
-            const res = await axios.post('http://localhost:5000/api/kitchen/add-container', {name:coolerName.trim().toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
+            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/add-container', {name:coolerName.trim().toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
                 headers: { Authorization: `Bearer ${token}`},
             })
+            // const res = await axios.post('http://localhost:5000/api/kitchen/add-container', {name:coolerName.trim().toLowerCase(), wgt:coolerWeight, scoop: scoopWeight},{ 
+            //     headers: { Authorization: `Bearer ${token}`},
+            // })
 
             if (res) {
                 alert(`Created: ${coolerName} container.`);

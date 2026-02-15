@@ -26,12 +26,12 @@
         loadingFood = true;
         try {
             const token = localStorage.getItem("token");
-            // const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtra},{ 
-            //     headers: { Authorization: `Bearer ${token}`},
-            // })
-            const res = await axios.post('http://localhost:5000/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtraFood},{ 
+            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtraFood},{ 
                 headers: { Authorization: `Bearer ${token}`},
             })
+            // const res = await axios.post('http://localhost:5000/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtraFood},{ 
+            //     headers: { Authorization: `Bearer ${token}`},
+            // })
            // console.log(`Status: ${res.status}`);
             if (res.status !== 200) {
                 alert("Couldn't complete this action. That's all I know!");
@@ -63,12 +63,12 @@
         loadingSnack = true;
         try {
             const token = localStorage.getItem("token");
-            // const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtra},{ 
-            //     headers: { Authorization: `Bearer ${token}`},
-            // })
-            const res = await axios.post('http://localhost:5000/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtraSnack},{ 
+            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtraSnack},{ 
                 headers: { Authorization: `Bearer ${token}`},
             })
+            // const res = await axios.post('http://localhost:5000/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtraSnack},{ 
+            //     headers: { Authorization: `Bearer ${token}`},
+            // })
            // console.log(`Status: ${res.status}`);
             if (res.status !== 200) {
                 alert("Couldn't complete this action. That's all I know!");

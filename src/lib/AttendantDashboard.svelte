@@ -54,12 +54,12 @@
     try {
       confirming = true;
       const token = localStorage.getItem("token");
-      // const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
-      //         headers: { Authorization: `Bearer ${token}`},
-      //       });
-            const res = await axios.post("http://localhost:5000/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
+      const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
               headers: { Authorization: `Bearer ${token}`},
             });
+            // const res = await axios.post("http://localhost:5000/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
+            //   headers: { Authorization: `Bearer ${token}`},
+            // });
       if (res) {
         confirmation = res.data;
       }      
@@ -89,12 +89,12 @@
       const storedFood = localStorage.getItem("food");
       const storedSnacks = localStorage.getItem("snacks")  
       const token = localStorage.getItem("token");
-      // const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/recent", { 
-      //           headers: { Authorization: `Bearer ${token}`},
-      //       });
-            const res = await axios.get("http://localhost:5000/api/kitchen/recent", { 
+      const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/recent", { 
                 headers: { Authorization: `Bearer ${token}`},
             });
+            // const res = await axios.get("http://localhost:5000/api/kitchen/recent", { 
+            //     headers: { Authorization: `Bearer ${token}`},
+            // });
       if (res) {
         // console.log("Serving: ", res.data)
         // console.log("Food: ", res.data.foodData)
@@ -197,7 +197,7 @@
       try {
         addDrinkLoading = true;
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/menu", { 
+        const res = await axios.get("https://thonia-foods-server.onrender.com/api/menu", { 
             params: {name: itemName.trim().toLowerCase()},
             headers: { Authorization: `Bearer ${token}`},
         })
@@ -297,7 +297,7 @@
       drinkObj['quantity'] = drinkCount;
       drinkObj['subTotal'] = item.price * drinkCount;
         const token = localStorage.getItem("token");
-        const res = await axios.put("http://localhost:5000/api/menu/update-drink-quantity", {name: drinkObj.name.trim().toLowerCase(), quantity: item.quantity}, {headers: { Authorization: `Bearer ${token}`}})
+        const res = await axios.put("https://thonia-foods-server.onrender.com/api/menu/update-drink-quantity", {name: drinkObj.name.trim().toLowerCase(), quantity: item.quantity}, {headers: { Authorization: `Bearer ${token}`}})
 
         if (res) {
           console.log(res.data)
@@ -449,12 +449,12 @@
         paidBy: paymentMode
       }
       const token = localStorage.getItem("token");
-      // const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
-      //         headers: { Authorization: `Bearer ${token}`},
-      //   });
-            const res = await axios.post("http://localhost:5000/api/orders/", newOrder, { 
+      const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
               headers: { Authorization: `Bearer ${token}`},
         });
+        //     const res = await axios.post("http://localhost:5000/api/orders/", newOrder, { 
+        //       headers: { Authorization: `Bearer ${token}`},
+        // });
         if (res) {
      
           alert(`Completed order`);
