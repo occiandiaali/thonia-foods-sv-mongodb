@@ -57,7 +57,7 @@
       // const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
       //         headers: { Authorization: `Bearer ${token}`},
       //       });
-            const res = await axios.post("https://thonia-foods-server.onrender.com/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
+            const res = await axios.post("http://localhost:5000/api/kitchen/attendant-confirm", {name:foodConfirm.trim().toLowerCase(), weight:wgtConfirm}, { 
               headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
@@ -85,12 +85,14 @@
   // }
 
   async function getRecentKitchen() {
-    try {      
+    try {    
+      const storedFood = localStorage.getItem("food");
+      const storedSnacks = localStorage.getItem("snacks")  
       const token = localStorage.getItem("token");
       // const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/recent", { 
       //           headers: { Authorization: `Bearer ${token}`},
       //       });
-            const res = await axios.get("https://thonia-foods-server.onrender.com/api/kitchen/recent", { 
+            const res = await axios.get("http://localhost:5000/api/kitchen/recent", { 
                 headers: { Authorization: `Bearer ${token}`},
             });
       if (res) {
@@ -99,13 +101,17 @@
         // console.log("Snack: ", res.data.snackData)
         res.data.foodData.forEach(datum => {
           const temp = {...datum, count: 0, sales: 0};
-          food.push(temp);
-          localStorage.setItem("food", JSON.stringify(food));
+          if (!storedFood) {
+            food.push(temp);
+            localStorage.setItem("food", JSON.stringify(food));
+          }
         });
         res.data.snackData.forEach(datum => {
           const temp = {...datum, count: 0, sales: 0};
-          snacks.push(temp);
-          localStorage.setItem("snacks", JSON.stringify(snacks));
+          if (!storedSnacks) {
+            snacks.push(temp);
+            localStorage.setItem("snacks", JSON.stringify(snacks));
+          }
         });
 
       }
@@ -191,7 +197,7 @@
       try {
         addDrinkLoading = true;
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://thonia-foods-server.onrender.com/api/menu", { 
+        const res = await axios.get("http://localhost:5000/api/menu", { 
             params: {name: itemName.trim().toLowerCase()},
             headers: { Authorization: `Bearer ${token}`},
         })
@@ -291,7 +297,7 @@
       drinkObj['quantity'] = drinkCount;
       drinkObj['subTotal'] = item.price * drinkCount;
         const token = localStorage.getItem("token");
-        const res = await axios.put("https://thonia-foods-server.onrender.com/api/menu/update-drink-quantity", {name: drinkObj.name.trim().toLowerCase(), quantity: item.quantity}, {headers: { Authorization: `Bearer ${token}`}})
+        const res = await axios.put("http://localhost:5000/api/menu/update-drink-quantity", {name: drinkObj.name.trim().toLowerCase(), quantity: item.quantity}, {headers: { Authorization: `Bearer ${token}`}})
 
         if (res) {
           console.log(res.data)
@@ -389,10 +395,11 @@
 
   async function checkOut() {
     if (orderTotal === 0) {
-      alert("Error: No order to complete!");
+      startOrder = false;
+      return;
     }
+    checkingOut = true;
     try {
-      checkingOut = true;
       if (Object.keys(foodObj).length > 0) {
         Object.entries(foodObj).forEach(([k,v]) => {
           if (k === 'subTotal') {
@@ -445,7 +452,7 @@
       // const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
       //         headers: { Authorization: `Bearer ${token}`},
       //   });
-            const res = await axios.post("https://thonia-foods-server.onrender.com/api/orders/", newOrder, { 
+            const res = await axios.post("http://localhost:5000/api/orders/", newOrder, { 
               headers: { Authorization: `Bearer ${token}`},
         });
         if (res) {
@@ -509,11 +516,14 @@
    if (storedDrinks) {
     drinks = JSON.parse(storedDrinks)
    }
+  if (storedFood) {
+    food = JSON.parse(storedFood)
+   }
+  if (storedSnacks) {
+    snacks = JSON.parse(storedSnacks)
+   }
    if (!storedFood || !storedSnacks) {
     getRecentKitchen();
-   } else {
-    food = JSON.parse(storedFood);
-    snacks = JSON.parse(storedSnacks)
    }
  })   
 
@@ -686,6 +696,19 @@
     padding: 6px;
     border: none;
     border-radius: 8px;
+    margin: 6px;
+  }
+
+  .foodOrdersDiv {
+    display: flex;
+    flex-direction: row;
+    justify-items: center;
+  }
+  .foodOrdersNameDiv {
+    flex: 1;
+  }
+  .foodOrdersStatDiv {
+    flex: 1;
   }
 
   /** The Orders list drinks section styles*/
@@ -702,6 +725,9 @@
   }
 
   @media only screen and (max-width: 600px) {
+    .foodOrdersDiv {
+      flex-direction: column;
+    }
     .daily-menu-section {
         margin: 100px auto;
     }
@@ -736,10 +762,10 @@
     <p><strong>Kitchen Table</strong></p>
    <ul>
    {#each food as f}
-    <li>{f.name}: {f.wgt/1000}Kg/{f.qty} portions</li>
+    <li>{f.name}: {f.wgt/1000}Kg/{f.qty} portions {f.addition ? '★':''}</li>
    {/each}
     {#each snacks as s}
-    <li>{s.name}: {s.qty} pieces</li>
+    <li>{s.name}: {s.qty} pieces {s.addition ? '★' : ''}</li>
    {/each}
    </ul>
    {:else}
@@ -753,6 +779,7 @@
   <form onsubmit={confirmKitchenTable}>
   <input placeholder="food name" bind:value={foodConfirm}/>
   <input type="number" placeholder="Weight" bind:value={wgtConfirm}/>
+  <br/>
   <button type="submit">{confirming ? 'Wait..' : 'Confirm'}</button>
   </form>
   {#if confirmation}
@@ -774,20 +801,26 @@
   <p style="color: red;">{addDrinkErrorMsg}</p>
   {/if}
 </div>
-<h4>Sales list</h4>
+<h4>Sales list
+
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+<img src="/file-export.svg" alt="export sales" style="cursor: pointer;" width="20px" height="20px" onkeydown={null} onclick={() => alert("This will export today's sales list to your email..")}/></h4>
 <!--[TODO]:ClearAll what? -->
 <!-- <button class="clear" onclick={clearAllLocalStorage}>Clear All</button> -->
 <div class="items-list-div">
   <h5>Food</h5>
   {#each food as item, i}     
-        <div style="display: flex;flex-wrap:wrap; padding:10px;justify-content:space-around; align-items:center">
+        <div class="foodOrdersDiv">
           <!-- Food input -->
           <!-- <input type="text" bind:value={item.food} placeholder="Item name" /> -->
+           <div class="foodOrdersNameDiv">
           <span class="item-food-span">{item.name}{item.addition ? '★' : null}</span>
            <!-- Qty control -->
       <button id="decQty" onclick={() => foodDecrement(item)} disabled={startOrder === false}>-</button>
       <span>{item.qty}</span>
+      </div>
       <!-- <button id="incQty" onclick={() => increment(item)} disabled={startOrder === false}>+</button> -->
+       <div class="foodOrdersStatDiv">
       <!-- Count -->
       <span>quantity: {foodObj.quantity}</span>
       <span>|</span>
@@ -796,10 +829,12 @@
       <span>|</span> -->
       <!-- Total -->
       <!-- <span>SubTotal: ₦{item.sales}</span> -->
-       <span>SubTotal: ₦{foodObj.subTotal}</span>
+       <span>sub: ₦{foodObj.subTotal}</span>
+       {#if !startOrder}
       <!-- Remove button -->
-      <button class="remove" onclick={() => removeFoodItem(i)}>X</button>
-      
+      <button class="remove" onclick={() => removeFoodItem(i)}>✖</button>
+      {/if}
+      </div>
       </div>
 
       <!-- <button class="remove" onclick={() => removeItem(i)}>✖</button> -->
@@ -826,9 +861,11 @@
       <span>|</span> -->
       <!-- Total -->
       <!-- <span>SubTotal: ₦{snack.sales}</span> -->
-       <span>SubTotal: ₦{snackObj.subTotal}</span>
-      <!-- Remove button -->
-      <button class="remove" onclick={() => removeSnackItem(i)}>X</button>
+       <span>sub: ₦{snackObj.subTotal}</span>
+       {#if !startOrder}
+       <!-- Remove button -->
+       <button class="remove" onclick={() => removeSnackItem(i)}>✖</button>
+       {/if}
       
       </div>
 
@@ -855,9 +892,11 @@
           <span>|</span>
           <!-- Total -->
           <!-- <span>SubTotal: ₦{drink.sales}</span> -->
-           <span>SubTotal: ₦{drinkObj.subTotal}</span>
+           <span>sub: ₦{drinkObj.subTotal}</span>
+           {#if !startOrder}
           <!-- Remove button -->
-          <button class="remove" onclick={() => removeDrinkItem(x)}>X</button>
+          <button class="remove" onclick={() => removeDrinkItem(x)}>✖</button>
+          {/if}
           
     </div>
   </div>
@@ -880,7 +919,7 @@
     <!-- Grand total -->
   <div class="grand-total">
     Order Total: ₦{orderTotal}
-    <button class={!startOrder && orderTotal === 0 ? 'new-order-btn' : 'checkout-btn'} onclick={() => !startOrder || orderTotal === 0 ? startOrder = true : checkOut()}>{startOrder || orderTotal !== 0 ? 'Complete' : checkingOut ? 'Processing' : 'New Order'}</button>
+    <button class={!startOrder ? 'new-order-btn' : 'checkout-btn'} onclick={() => !startOrder ? startOrder = true : checkOut()}>{startOrder ? 'Complete' : checkingOut ? 'Wait..' : 'New Order'}</button>
   </div>
   <!-- {#if checkoutDone}
   <Receipt orderid={orderid} mode={mode} total={total} cart={cart} waiter={waiter} />

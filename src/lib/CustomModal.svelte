@@ -4,15 +4,27 @@
   function closeModal() {
     isOpen = false;
   }
+  function clearMenu() {
+    alert("This would delete all the content in Menu..")
+  }
 </script>
 
 <div>Today {new Date().toISOString().substring(0, 10)}</div>
 <div class="modal" class:open={isOpen}>
-  <div class="modal-overlay" role="button" tabindex="-1" on:keydown={closeModal} on:click={closeModal}>
-  <div class="modal-content">
+  <div class="modal-overlay" >
+    <div class="modal-content">
+      <span role="button" tabindex="-1" on:keydown={closeModal} on:click={closeModal} style="position:absolute;top:2%;right:5%; color: red;font-size:large;font-weight:700">X</span>
+    <label for="category-select">Filter by category</label>
+    <select name="categories" id="category-select">
+      <option value="">--Show only--</option>
+      <option value="food">Food</option>
+      <option value="drinks">Drinks</option>
+      <option value="snack">Snacks</option>
+    </select>
     <slot></slot>
 
     <button on:click={closeModal}>Close</button>
+    <button class="clear-menu" on:click={clearMenu}>Clear</button>
   </div>
   </div>
 </div>
@@ -28,6 +40,11 @@
     button:hover {
         background: white;
         color: black;
+    }
+    .clear-menu {
+      background: red;
+      color: white;
+      margin: 1% auto;
     }
   .modal {
     display: none;
@@ -67,5 +84,15 @@
     overflow-y: auto;
     width: 90%;
     max-width: 600px;
+  }
+  label {
+    font-family: sans-serif;
+    font-size: 1rem;
+    padding-right: 10px;
+  }
+
+  select {
+    font-size: 0.9rem;
+    padding: 2px 5px;
   }
 </style>

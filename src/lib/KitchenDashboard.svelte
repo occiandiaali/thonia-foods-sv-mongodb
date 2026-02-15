@@ -8,7 +8,8 @@
    // let itemWgt = $state(0);
     let foodWgt = $state(0);
     let snackCount = $state(0);
-    let isExtra = $state(false);
+    let isExtraFood = $state(false);
+    let isExtraSnack = $state(false);
     //let loading = $state(false);
     let loadingFood = $state(false);
     let loadingSnack = $state(false);
@@ -25,12 +26,12 @@
         loadingFood = true;
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtra},{ 
-                headers: { Authorization: `Bearer ${token}`},
-            })
-            // const res = await axios.post('http://localhost:5000/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtra},{ 
+            // const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtra},{ 
             //     headers: { Authorization: `Bearer ${token}`},
             // })
+            const res = await axios.post('http://localhost:5000/api/kitchen/food', {name:foodName.trim().toLowerCase(), weight:foodWgt, extra: isExtraFood},{ 
+                headers: { Authorization: `Bearer ${token}`},
+            })
            // console.log(`Status: ${res.status}`);
             if (res.status !== 200) {
                 alert("Couldn't complete this action. That's all I know!");
@@ -40,7 +41,7 @@
                 alert(`Successfully submitted.`);
                 foodName = "";
                 foodWgt = 0;
-                isExtra = false;
+                isExtraFood = false;
 
             }
         } catch (err) {
@@ -62,12 +63,12 @@
         loadingSnack = true;
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtra},{ 
-                headers: { Authorization: `Bearer ${token}`},
-            })
-            // const res = await axios.post('http://localhost:5000/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtra},{ 
+            // const res = await axios.post('https://thonia-foods-server.onrender.com/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtra},{ 
             //     headers: { Authorization: `Bearer ${token}`},
             // })
+            const res = await axios.post('http://localhost:5000/api/kitchen/snack', {name:snackName.trim().toLowerCase(), count:snackCount, extra: isExtraSnack},{ 
+                headers: { Authorization: `Bearer ${token}`},
+            })
            // console.log(`Status: ${res.status}`);
             if (res.status !== 200) {
                 alert("Couldn't complete this action. That's all I know!");
@@ -77,7 +78,7 @@
                 alert(`Successfully submitted.`);
                 snackName = "";
                 snackCount = 0;
-                isExtra = false;
+                isExtraSnack = false;
 
             }
         } catch (err) {
@@ -258,7 +259,7 @@ input[type="checkbox"]:checked::after {
     <form onsubmit={submitFoodEntry}>
     <input type="text" placeholder="Food name" bind:value={foodName} />
     <input type="number" placeholder="Item weight (g)" bind:value={foodWgt}/>
-    <input type="checkbox" role="switch" bind:checked={isExtra}/> Extra <br/>
+    <input type="checkbox" role="switch" bind:checked={isExtraFood}/> Extra <br/>
    
     <button type="submit">{loadingFood ? 'Submitting' : 'Submit Food'}</button>
     </form>
@@ -295,7 +296,7 @@ input[type="checkbox"]:checked::after {
     <form onsubmit={submitSnackEntry}>
     <input type="text" placeholder="Snack name" bind:value={snackName} />
     <input type="number" placeholder="Snacks count" bind:value={snackCount}/>
-    <input type="checkbox" role="switch" bind:checked={isExtra}/> Extra <br/>
+    <input type="checkbox" role="switch" bind:checked={isExtraSnack}/> Extra <br/>
    
     <button type="submit">{loadingSnack ? 'Submitting' : 'Submit Snack'}</button>
     </form>
